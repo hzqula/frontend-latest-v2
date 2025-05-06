@@ -1,9 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap");
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-body: "Funnel Sans", sans-serif;
+  --font-heading: "Funnel Display", sans-serif;
+
+  --color-env-darker: oklch(0.26 0.051 143.93);
+  --color-env-dark: oklch(0.42 0.0813 141.49);
+  --color-env-base: oklch(0.52 0.113 132.92);
+  --color-env-light: oklch(0.7 0.1144 123.04);
+  --color-env-lighter: oklch(0.94 0.1072 112.28);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -115,6 +127,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
   }
 }

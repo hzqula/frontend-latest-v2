@@ -81,8 +81,8 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
   // Check if screen is mobile and handle resize
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
+      setIsMobile(window.innerWidth < 801);
+      if (window.innerWidth < 801) {
         setIsSidebarExpanded(false);
       }
     };

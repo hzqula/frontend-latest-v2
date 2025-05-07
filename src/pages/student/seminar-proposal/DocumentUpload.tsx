@@ -105,10 +105,10 @@ const DocumentUploadModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl -mb-1 font-heading font-black text-primary-800">
+          <DialogTitle className="text-xl md:text-2xl -mb-1 font-heading font-black text-primary-800">
             Upload Dokumen yang Dibutuhkan
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs md:text-sm">
             Unggah semua dokumen yang diperlukan untuk seminar proposal Anda.
           </DialogDescription>
         </DialogHeader>
@@ -132,7 +132,7 @@ const DocumentUploadModal = ({
                 </div>
 
                 <div className="flex flex-col gap-2 mt-4">
-                  <div className="relative gap-2 flex">
+                  <div className="relative gap-2 flex md:flex-row flex-col">
                     <Button
                       variant="outline"
                       size="sm"
@@ -151,7 +151,7 @@ const DocumentUploadModal = ({
                           : "default"
                       }
                       size="sm"
-                      className="flex items-center gap-2 w-full sm:w-auto"
+                      className="flex items-center gap-2 w-auto"
                       disabled={isSubmitting}
                     >
                       <Upload className="h-4 w-4" />
@@ -172,7 +172,7 @@ const DocumentUploadModal = ({
                   </div>
 
                   {uploadedDocuments[document.id] && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
                       <FileText className="h-4 w-4" />
                       {uploadedDocuments[document.id]?.name}
                     </div>
@@ -184,22 +184,24 @@ const DocumentUploadModal = ({
         </ScrollArea>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="destructive"
-            className="w-1/3"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Batal
-          </Button>
-          <Button
-            className="w-2/3"
-            onClick={handleSubmit}
-            disabled={!allDocumentsUploaded() || isSubmitting}
-          >
-            {isSubmitting ? "Menyimpan..." : "Simpan"}
-          </Button>
+          <div className="w-full flex gap-4">
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-1/3"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Batal
+            </Button>
+            <Button
+              className="flex-1 md:w-2/3"
+              onClick={handleSubmit}
+              disabled={!allDocumentsUploaded() || isSubmitting}
+            >
+              {isSubmitting ? "Menyimpan..." : "Simpan"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useApiData } from "../../../hooks/useApiData";
+import { useApiData } from "@/hooks/useApiData";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../../components/ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,16 +20,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../../components/ui/form";
-import { Input } from "../../../components/ui/input";
-import { Button } from "../../../components/ui/button";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
 import { Plus, Minus } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -103,7 +103,7 @@ const ResearchDetailsModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl -mb-1 font-heading font-semibold text-primary-800">
+          <DialogTitle className="text-2xl -mb-1 font-heading font-semibold text-env-darker">
             Detail Seminar Proposal
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -121,11 +121,12 @@ const ResearchDetailsModal = ({
               name="researchTitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-medium mb-2 block text-primary-800">
+                  <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
                     Judul Penelitian
                   </FormLabel>
                   <FormControl>
                     <Input
+                      className="md:placeholder:text-base placeholder:text-sm"
                       placeholder="Masukkan judul penelitian Anda"
                       {...field}
                     />
@@ -141,7 +142,7 @@ const ResearchDetailsModal = ({
                 name="advisor1"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-medium mb-2 block text-primary-800">
+                    <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
                       Dosen Pembimbing I
                     </FormLabel>
                     <Select
@@ -177,7 +178,7 @@ const ResearchDetailsModal = ({
                   name="advisor2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-medium block text-primary-800 mb-2">
+                      <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
                         Dosen Pembimbing II
                       </FormLabel>
                       <Select
@@ -218,7 +219,7 @@ const ResearchDetailsModal = ({
               className="w-full"
               type="button"
               variant="outline"
-              size="sm"
+              size="default"
               onClick={toggleSecondSupervisor}
               disabled={showSecondSupervisor && !form.getValues("advisor2")}
             >
@@ -232,17 +233,22 @@ const ResearchDetailsModal = ({
                 : "Tambah Dosen Pembimbing"}
             </Button>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="destructive"
-                className="w-1/3"
-                onClick={() => onOpenChange(false)}
-              >
-                Batal
-              </Button>
-              <Button className="w-2/3" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Menyimpan..." : "Simpan"}
-              </Button>
+              <div className="w-full flex gap-4">
+                <Button
+                  variant="destructive"
+                  className="w-1/3"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Batal
+                </Button>
+                <Button
+                  className="flex-1"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Menyimpan..." : "Simpan"}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>

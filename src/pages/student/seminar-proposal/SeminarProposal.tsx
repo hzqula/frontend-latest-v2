@@ -22,6 +22,7 @@ import {
   Calendar,
   Loader,
   Info,
+  Download,
 } from "lucide-react";
 import {
   Alert,
@@ -35,6 +36,7 @@ import StudentLayout from "../../../components/layouts/StudentLayout";
 import { Stepper } from "../../../components/Stepper";
 import { Link } from "react-router";
 import SeminarInvitation from "../../../components/SeminarInvitation";
+import EvenReport from "@/components/EventReport";
 import studentImg from "@/assets/img/student-ill.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
@@ -106,6 +108,7 @@ const StudentSeminarProposal = () => {
     useState(false);
   const [documentUploadModalOpen, setDocumentUploadModalOpen] = useState(false);
   const [shouldPrint, setShouldPrint] = useState(false);
+  const [shouldPrintReport, setShouldPrintReport] = useState(false);
 
   if (!user || !user.profile?.nim) {
     return <div>Loading...</div>;
@@ -195,6 +198,7 @@ const StudentSeminarProposal = () => {
       if (seminarData.status === "DRAFT") setCurrentStep("step1");
       else if (seminarData.status === "SUBMITTED") setCurrentStep("step2");
       else if (seminarData.status === "SCHEDULED") setCurrentStep("step3");
+      else if (seminarData.status === "COMPLETED") setCurrentStep("step4");
     }
   }, [seminarQuery.data, documentUploadModalOpen]);
 
@@ -382,7 +386,7 @@ const StudentSeminarProposal = () => {
     }
   };
 
-  const isScheduled = seminar.status === "SCHEDULED";
+  // const isScheduled = seminar.status === "SCHEDULED";
 
   const steps = [
     "Detail Seminar",
@@ -405,6 +409,12 @@ const StudentSeminarProposal = () => {
         );
         return;
       }
+      if (currentStep === "step3" && seminar.status !== "COMPLETED") {
+        toast.error(
+          "Seminar belum selesai dinilai oleh semua dosen. Tunggu hingga semua penilaian diserahkan untuk melanjutkan."
+        );
+        return;
+      }
       setCurrentStep(`step${nextStepNum}`);
       setMaxStepReached((prev) => Math.max(prev, nextStepNum));
     }
@@ -419,6 +429,10 @@ const StudentSeminarProposal = () => {
 
   const handlePrintInvitation = () => {
     setShouldPrint(true);
+  };
+
+  const handlePrintReport = () => {
+    setShouldPrintReport(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -500,7 +514,7 @@ const StudentSeminarProposal = () => {
                     }
                   })()
                 : seminar.status === "COMPLETED"
-                ? "Seminar anda sedang menunggu untuk dinilai."
+                ? "Seminar anda telah selesai. Silakan unduh Berita Acara."
                 : "Status seminar belum diketahui."}
             </p>
           </div>
@@ -1000,61 +1014,202 @@ const StudentSeminarProposal = () => {
 
         {currentStep === "step4" && (
           <Card className="bg-white col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-primary-700">
-                Registration Complete
-              </CardTitle>
-              <CardDescription className="text-primary-600">
-                Your proposal seminar registration has been submitted
-                successfully.
-              </CardDescription>
-            </CardHeader>
+            <div className="relative bg-gradient-to-r from-env-base to-env-darker">
+              <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
+
+              <CardHeader className="relative z-10">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
+                    Berita Acara
+                  </CardTitle>
+                </div>
+                <CardDescription className="text-primary-foreground text-xs md:text-sm">
+                  Lihat detail seminar Anda dan unduh Berita Acara setelah
+                  seminar selesai.
+                </CardDescription>
+              </CardHeader>
+            </div>
             <CardContent>
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <div className="rounded-full bg-primary-100 p-3 mb-4">
-                  <CheckCircle2 className="h-8 w-8 text-primary-600" />
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                      Mahasiswa
+                    </h3>
+                    <div className="flex flex-col">
+                      <p className="text-env-darker text-sm md:text-base font-bold">
+                        {seminar.student?.name}
+                      </p>
+                      <p className="text-env-darker text-sm md:text-base font-bold">
+                        {seminar.student?.nim}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                      Judul Penelitian
+                    </h3>
+                    <p className="text-env-darker text-sm md:text-base font-bold">
+                      {seminar.title}
+                    </p>
+                  </div>
+                  <div className="col-span-1">
+                    <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">
+                      Dosen Pembimbing
+                    </h3>
+                    <div className="flex flex-col gap-2">
+                      {seminar.advisors.map((advisor, index) => (
+                        <div
+                          key={index}
+                          className="flex border-env-light rounded-md items-center space-x-2"
+                        >
+                          <Avatar>
+                            <AvatarImage
+                              src={
+                                advisor.profilePicture
+                                  ? advisor.profilePicture
+                                  : `https://robohash.org/${advisor.lecturerName}`
+                              }
+                              alt="advisor-image"
+                              className="border rounded-full h-8 w-8 md:h-12 md:w-12"
+                            />
+                            <AvatarFallback className="bg-primary-100 text-primary-800">
+                              {advisor
+                                .lecturerName!.split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="text-xs md:text-sm font-medium text-primary-800">
+                              {advisor.lecturerName}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {advisor.lecturerNIP}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-span-1">
+                    <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">
+                      Dosen Penguji
+                    </h3>
+                    {seminar.assessors.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {seminar.assessors.map((assessor, index) => (
+                          <div
+                            key={index}
+                            className="flex border-env-light rounded-md items-center space-x-2"
+                          >
+                            <Avatar>
+                              <AvatarImage
+                                src={
+                                  assessor.profilePicture
+                                    ? assessor.profilePicture
+                                    : `https://robohash.org/${assessor.lecturerName}`
+                                }
+                                alt="assessor-image"
+                                className="border rounded-full h-8 w-8 md:h-12 md:w-12"
+                              />
+                              <AvatarFallback className="bg-primary-100 text-primary-800">
+                                {assessor
+                                  .lecturerName!.split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="text-xs md:text-sm font-medium text-primary-800">
+                                {assessor.lecturerName}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {assessor.lecturerNIP}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-env-darker text-sm md:text-base font-bold">
+                        Belum ditentukan
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                      Waktu
+                    </h3>
+                    <p className="text-env-darker text-sm md:text-base font-bold">
+                      {seminar.time
+                        ? `Jam ${formatTime(seminar.time)} | ${formatDate(
+                            seminar.time
+                          )}
+                          `
+                        : "Belum ditentukan"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                      Ruangan
+                    </h3>
+                    <p className="text-env-darker text-sm md:text-base font-bold">
+                      {seminar.room || "Belum ditentukan"}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-medium mb-2 text-env-darker">
-                  Thank You!
-                </h3>
-                <p className="text-primary-600 mb-6 max-w-md">
-                  Your proposal seminar registration has been submitted and is
-                  now being processed by the coordinator.
-                </p>
-                <div className="bg-primary-50 p-4 rounded-lg mb-6 w-full max-w-md border-primary-200">
-                  <p className="font-medium text-env-darker">
-                    Registration ID:{" "}
-                    <span className="font-mono">{seminar.id || "N/A"}</span>
-                  </p>
-                  <p className="text-sm text-primary-600">
-                    Please keep this ID for your reference.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => (window.location.href = "/dashboard")}
-                  className="border-env-lighter text-primary-700 hover:bg-accent hover:text-accent-foreground"
-                >
-                  Return to Dashboard
-                </Button>
+
+                <Alert variant="default">
+                  <AlertCircle />
+                  <AlertTitle>Informasi</AlertTitle>
+                  <AlertDescription>
+                    Berita Acara akan tersedia setelah seminar selesai dan
+                    dinilai oleh semua dosen pembimbing dan penguji.
+                  </AlertDescription>
+                </Alert>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="md:hidden flex-col flex gap-2">
               <Button
+                onClick={handlePrintReport}
+                disabled={seminar.status !== "COMPLETED"}
                 variant="outline"
+                className="border-2 w-full border-primary text-env-darker"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Unduh Berita Acara
+              </Button>
+              <div className="w-full gap-2 flex items-center">
+                <Button
+                  variant="secondary"
+                  onClick={handlePrevStep}
+                  className="flex-0 min-w-[120px]"
+                >
+                  Kembali
+                </Button>
+              </div>
+            </CardFooter>
+            <CardFooter className="hidden md:flex justify-between">
+              <Button
+                variant="secondary"
                 onClick={handlePrevStep}
-                disabled={currentStepIndex === 1 || isScheduled}
                 className="border-env-lighter text-primary-700 hover:bg-accent hover:text-accent-foreground"
               >
-                Back
+                Kembali
               </Button>
-              <Button
-                onClick={handleNextStep}
-                disabled={true}
-                className="bg-primary hover:bg-primary-700 text-primary-foreground"
-              >
-                Next
-              </Button>
+              <div className="space-x-2">
+                <Button
+                  onClick={handlePrintReport}
+                  disabled={seminar.status !== "COMPLETED"}
+                  variant="outline"
+                  className="border-2 border-primary text-env-darker"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Unduh Berita Acara
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         )}
@@ -1089,6 +1244,11 @@ const StudentSeminarProposal = () => {
         seminar={seminar}
         shouldPrint={shouldPrint}
         onPrintComplete={() => setShouldPrint(false)}
+      />
+      <EvenReport
+        seminar={seminar}
+        shouldPrint={shouldPrintReport}
+        onPrintComplete={() => setShouldPrintReport(false)}
       />
     </StudentLayout>
   );

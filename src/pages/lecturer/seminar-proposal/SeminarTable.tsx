@@ -251,12 +251,12 @@ const SeminarTable = ({
             return (
               <Card
                 key={seminar.id}
-                className="overflow-hidden border-l-4 hover:shadow-md transition-all duration-200"
+                className="overflow-hidden gap-2 border-l-4 hover:shadow-md transition-all duration-200"
                 style={{ borderLeftColor: isAssessed ? "#3498db" : "#e74c3c" }}
               >
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-0">
                   <div className="flex justify-between items-start">
-                    <CardTitle className="text-base font-medium line-clamp-2">
+                    <CardTitle className="text-sm font-medium line-clamp-2">
                       {seminar.title}
                     </CardTitle>
                     {isAssessed ? (
@@ -271,30 +271,32 @@ const SeminarTable = ({
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">
-                  <div className="space-y-2 text-sm">
+                  <div className="text-sm">
                     <div className="flex items-center gap-2">
-                      <User size={16} className="text-primary-600" />
+                      <User size={12} className="text-primary-600" />
                       <div>
-                        <span className="font-medium">
+                        <span className="text-xs">
                           {seminar.student?.name || "N/A"}
                         </span>
-                        <span className="text-muted-foreground ml-2">
+                        <span className="text-muted-foreground text-xs ml-2">
                           ({seminar.studentNIM})
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} className="text-primary-600" />
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar size={12} className="text-primary-600" />
                       <div>
-                        <span>{formatDate(seminar.time)}</span>
-                        <span className="text-muted-foreground ml-2">
+                        <span className="text-xs">
+                          {formatDate(seminar.time)}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
                           Jam {formatTime(seminar.time)} WIB
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-primary-600" />
-                      <span>{seminar.room || "TBD"}</span>
+                      <MapPin size={12} className="text-primary-600" />
+                      <span className="text-xs">{seminar.room || "TBD"}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -305,7 +307,7 @@ const SeminarTable = ({
                     className="text-primary-700"
                     onClick={() => openDetailsModal(seminar)}
                   >
-                    <Info size={16} className="mr-1" />
+                    <Info size={12} className="mr-1" />
                     Lihat
                   </Button>
                   <Button

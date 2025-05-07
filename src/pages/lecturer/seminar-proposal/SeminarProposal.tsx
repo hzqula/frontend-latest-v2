@@ -165,26 +165,36 @@ const LecturerSeminarProposal = () => {
           onValueChange={setActiveTab}
           className="col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden pt-2 pr-1"
         >
+          <div className="relative md:hidden -mt-4 mb-2">
+            <Search className="absolute left-2.5 top-1/4 h-4 w-4 text-primary-600" />
+            <Input
+              type="search"
+              placeholder="Cari seminar berdasarkan judul penelitian | nama | nim"
+              className="w-full pl-8 bg-background  text-xs placeholder:text-xs border-primary-400"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <div className="flex gap-4 items-center w-full mb-4 justify-between">
             <TabsList className="bg-env-base">
               <TabsTrigger
                 value="advised"
-                className={`text-primary-foreground ${
-                  activeTab === "advised" ? "text-primary-800" : ""
+                className={`text-primary-foreground text-xs md:text-sm ${
+                  activeTab === "advised" ? "text-primary" : ""
                 }`}
               >
                 Dibimbing ({advisedSeminars.length})
               </TabsTrigger>
               <TabsTrigger
                 value="assessed"
-                className={`text-primary-foreground ${
-                  activeTab === "assessed" ? "text-primary-800" : ""
+                className={`text-primary-foreground text-xs md:text-sm ${
+                  activeTab === "assessed" ? "text-primary" : ""
                 }`}
               >
                 Diuji ({assessedSeminars.length})
               </TabsTrigger>
             </TabsList>
-            <div className="relative flex-2">
+            <div className="relative flex-2 hidden md:block">
               <Search className="absolute left-2.5 top-1/4 h-4 w-4 text-primary-600" />
               <Input
                 type="search"
@@ -195,11 +205,11 @@ const LecturerSeminarProposal = () => {
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] bg-background">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="all">Semua Keterangan</SelectItem>
                 <SelectItem value="assessed">Sudah Dinilai</SelectItem>
                 <SelectItem value="notAssessed">Belum Dinilai</SelectItem>
               </SelectContent>

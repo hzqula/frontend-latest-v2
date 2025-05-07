@@ -104,7 +104,9 @@ const SeminarInvitation = ({
       </div>
 
       {/* Garis Pemisah */}
-      <div className="border-t-2 border-b-2 border-black my-2 h-1"></div>
+
+      <div className="border-t-2 border-b-2 border-black my-1"></div>
+      <div className="border-t-2 border-b-2 border-black"></div>
 
       {/* Nomor, Lampiran, Hal */}
       <div className="mt-4 text-sm">
@@ -130,7 +132,9 @@ const SeminarInvitation = ({
           Kepada Yth. : Bapak/Ibu
           <div className="list-decimal pl-10 mt-1">
             <div className="flex mb-1">
-              <span className="w-80">1. Ketua Seminar</span>
+              <span className="w-80">
+                1. {seminar.advisors[0]?.lecturerName}
+              </span>
               <span>(Ketua)</span>
             </div>
             <div className="flex mb-1">

@@ -16,6 +16,18 @@
   --color-env-light: oklch(0.7 0.1144 123.04);
   --color-env-lighter: oklch(0.94 0.1072 112.28);
 
+  --color-jewel-green: #055a39;
+  --color-jewel-blue: #064359;
+  --color-jewel-red: #c50043;
+  --color-jewel-yellow: #f3a51a;
+  --color-jewel-purple: #6d275d;
+
+  --color-pastel-green: #adf7b6;
+  --color-pastel-blue: #a0ced9;
+  --color-pastel-red: #ffc09f;
+  --color-pastel-yellow: #ffee93;
+  --color-pastel-purple: #a594f9;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

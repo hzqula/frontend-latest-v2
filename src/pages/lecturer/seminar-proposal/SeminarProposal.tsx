@@ -2,9 +2,17 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApiData } from "@/hooks/useApiData";
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search } from "lucide-react";
+import {
+  AlarmClock,
+  AlertOctagon,
+  Calendar,
+  FormInput,
+  MapPin,
+  Search,
+  User,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import LecturerLayout from "@/components/layouts/LecturerLayout";
 import SeminarDetailsModal from "./SeminarDetailsModal";
@@ -17,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import DoughnutChartKeterangan from "./DoughnutChartKeterangan";
+import { Seminar } from "@/pages/student/seminar-proposal/SeminarProposal";
+import { Badge } from "@/components/ui/badge";
 
 const LecturerSeminarProposal = () => {
   const { user, token } = useAuth();
@@ -135,6 +146,47 @@ const LecturerSeminarProposal = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const currentDate = new Date();
+  const oldestUnassessedSeminar = [...advisedSeminars, ...assessedSeminars]
+    .filter(
+      (seminar) =>
+        !hasBeenAssessed(seminar) && new Date(seminar.time) < currentDate
+    )
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())[0];
+
+  const futureSeminars = [...advisedSeminars, ...assessedSeminars].filter(
+    (seminar) => new Date(seminar.time) > currentDate
+  );
+  const nearestSeminar =
+    futureSeminars.length > 0
+      ? futureSeminars.sort(
+          (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+        )[0]
+      : null;
+  const isNearestAdvised = nearestSeminar
+    ? advisedSeminars.some(
+        (seminar: Seminar) => seminar.id === nearestSeminar.id
+      )
+    : false;
+  const roleNearestSeminar = nearestSeminar
+    ? isNearestAdvised
+      ? "Dibimbing"
+      : "Diuji"
+    : "";
+
+  const advisedStats = {
+    assessed: advisedSeminars.filter(hasBeenAssessed).length,
+    notAssessed: advisedSeminars.filter(
+      (seminar: Seminar) => !hasBeenAssessed(seminar)
+    ).length,
+  };
+  const assessedStats = {
+    assessed: assessedSeminars.filter(hasBeenAssessed).length,
+    notAssessed: assessedSeminars.filter(
+      (seminar: Seminar) => !hasBeenAssessed(seminar)
+    ).length,
+  };
+
   const handleAssessNavigation = (seminarId: number) => {
     navigate(`/seminar-proposal/assess/${seminarId}`, {
       state: { fromAssessment: true },
@@ -144,26 +196,185 @@ const LecturerSeminarProposal = () => {
   return (
     <LecturerLayout>
       <div className="flex flex-col mb-4">
-        <h1 className="text-4xl font-heading font-black text-primary-800">
-          Seminar Proposal
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
+          Pendaftaran Seminar Proposal
         </h1>
-        <p className="text-primary">
+        <p className="text-primary md:text-base text-sm">
           {activeTab === "advised"
             ? "Kelola seminar proposal mahasiswa yang Anda bimbing"
             : "Kelola seminar proposal mahasiswa yang Anda uji"}
         </p>
       </div>
       <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="col-span-1 sm:col-span-2 py-4 px-8 row-span-1 border-2 border-pastel-green relative overflow-hidden rounded-xl bg-env-light"></Card>
+        <Card className="col-span-1 sm:col-span-2 py-4  gap-2 px-8 row-span-1 relative overflow-hidden border-env-darker border rounded-md bg-env-darker order-1">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-env-lighter">
+              Seminar Terbaru yang Belum Dinilai
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-red">
+              <AlertOctagon className="text-jewel-red w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          {oldestUnassessedSeminar ? (
+            <>
+              <div>
+                <CardTitle className="text-sm md:text-base text-primary-foreground font-medium line-clamp-2">
+                  {oldestUnassessedSeminar.title}
+                </CardTitle>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <User size={12} className="text-primary-foreground" />
+                    <div>
+                      <span className="text-xs text-primary-foreground">
+                        {oldestUnassessedSeminar.student?.name || "N/A"}
+                      </span>
+                      <span className="text-env-lighter text-xs ml-2">
+                        ({oldestUnassessedSeminar.studentNIM})
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar size={12} className="text-primary-foreground" />
+                    <div>
+                      <span className="text-xs text-primary-foreground">
+                        {formatDate(oldestUnassessedSeminar.time)}
+                      </span>
+                      <span className="text-xs text-env-lighter ml-2">
+                        Jam {formatTime(oldestUnassessedSeminar.time)} WIB
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={12} className="text-primary-foreground" />
+                    <span className="text-xs text-primary-foreground">
+                      {oldestUnassessedSeminar.room || "TBD"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-primary-foreground">
+              Tidak ada seminar belum dinilai.
+            </p>
+          )}
+        </Card>
 
-        <Card className="col-span-1 border border-env-darker row-span-2 gap-0 px-8 py-4 bg-env-lighter overflow-hidden relative"></Card>
-        <Card className="col-span-1 row-span-2 gap-0 px-8 py-4 bg-background overflow-hidden relative"></Card>
-        <Card className="col-span-1 sm:col-span-2 py-4 px-8 row-span-1 border-2 border-pastel-green relative overflow-hidden rounded-xl bg-env-light"></Card>
+        <Card className="col-span-1 row-span-2 gap-0 px-8 py-4 bg-background overflow-hidden relative order-3 md:order2">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
+              Dibimbing
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center  rounded-full bg-pastel-green">
+              <FormInput className="text-jewel-green w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          <DoughnutChartKeterangan
+            initialData={[
+              {
+                name: "Sudah Dinilai",
+                value: advisedStats.assessed,
+                color: "#064359",
+                stroke: "#a0ced9",
+              },
+              {
+                name: "Belum Dinilai",
+                value: advisedStats.notAssessed,
+                color: "#C50043",
+                stroke: "#ffc09f",
+              },
+            ]}
+          />
+        </Card>
+
+        <Card className="col-span-1 border row-span-2 gap-0 px-8 py-4 overflow-hidden relative order-4 md:order-3">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
+              Diuji
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-green">
+              <FormInput className="text-jewel-green w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          <DoughnutChartKeterangan
+            initialData={[
+              {
+                name: "Sudah Dinilai",
+                value: assessedStats.assessed,
+                color: "#064359",
+                stroke: "#a0ced9",
+              },
+              {
+                name: "Belum Dinilai",
+                value: assessedStats.notAssessed,
+                color: "#C50043",
+                stroke: "#ffc09f",
+              },
+            ]}
+          />
+        </Card>
+
+        <Card className="col-span-1 sm:col-span-2 py-4 px-8 row-span-1 relative overflow-hidden rounded-xl order-2 md:order-4">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
+              Seminar Terdekat
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-red">
+              <AlarmClock className="text-jewel-red w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          {nearestSeminar ? (
+            <div>
+              <div className="flex w-full justify-between">
+                <CardTitle className="text-sm md:text-base text-env-darker font-medium line-clamp-2">
+                  {nearestSeminar.title}
+                </CardTitle>
+                <Badge className="md:h-6 h-4 md:text-xs text-[8px] bg-pastel-blue text-jewel-blue">
+                  {roleNearestSeminar}
+                </Badge>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <User size={12} className="text-primary" />
+                  <div>
+                    <span className="text-xs text-primary">
+                      {nearestSeminar.student?.name || "N/A"}
+                    </span>
+                    <span className="text-muted-foreground text-xs ml-2">
+                      ({nearestSeminar.studentNIM})
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Calendar size={12} className="text-primary" />
+                  <div>
+                    <span className="text-xs text-primary">
+                      {formatDate(nearestSeminar.time)}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      Jam {formatTime(nearestSeminar.time)} WIB
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin size={12} className="text-primary" />
+                  <span className="text-xs text-primary">
+                    {nearestSeminar.room || "TBD"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-primary-600">
+              Tidak ada jadwal seminar terdekat.
+            </p>
+          )}
+        </Card>
 
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden pt-2 pr-1"
+          className="col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden pt-2 pr-1 order-last"
         >
           <div className="relative md:hidden -mt-4 mb-2">
             <Search className="absolute left-2.5 top-1/4 h-4 w-4 text-primary-600" />

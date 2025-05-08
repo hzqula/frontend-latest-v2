@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
 import StudentSeminarProposal from "../student/seminar-proposal/SeminarProposal";
 // import CoordinatorSeminarProposal from "../coordinator/seminar-proposal/SeminarProposal";
-// import LecturerSeminarProposal from "../lecturer/seminar-proposal/SeminarProposal";
+import LecturerSeminarProposal from "../lecturer/seminar-proposal/SeminarProposal";
 
 enum UserRole {
   STUDENT = "STUDENT",
@@ -45,8 +45,8 @@ const SeminarProposal: React.FC = () => {
       return <StudentSeminarProposal />;
     // case UserRole.COORDINATOR:
     //   return <CoordinatorSeminarProposal />;
-    // case UserRole.LECTURER:
-    //   return <LecturerSeminarProposal />;
+    case UserRole.LECTURER:
+      return <LecturerSeminarProposal />;
     default:
       return <Navigate to="/login" replace />;
   }

@@ -300,11 +300,11 @@ const SeminarTable = ({
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="pt-0 flex justify-between">
+                <CardFooter className="pt-0 flex justify-between gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-primary-700"
+                    className="flex-1"
                     onClick={() => openDetailsModal(seminar)}
                   >
                     <Info size={12} className="mr-1" />
@@ -312,8 +312,10 @@ const SeminarTable = ({
                   </Button>
                   <Button
                     size="sm"
-                    className={`${
-                      canAssessSeminar(seminar.time) ? "" : "cursor-not-allowed"
+                    className={`flex-1 ${
+                      canAssessSeminar(seminar.time)
+                        ? "bg-env-base"
+                        : "cursor-not-allowed"
                     }`}
                     disabled={!canAssessSeminar(seminar.time)}
                     onClick={() => handleAssessNavigation(seminar.id)}

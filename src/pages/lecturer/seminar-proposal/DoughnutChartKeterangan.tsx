@@ -34,8 +34,6 @@ const DoughnutChartKeterangan = ({ initialData }: DoughnutChartProps) => {
 
   return (
     <div style={{ width: "100%", height: "300px" }}>
-      {" "}
-      {/* Set tinggi tetap untuk debugging */}
       {hasData ? (
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

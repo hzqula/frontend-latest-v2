@@ -23,6 +23,7 @@ import {
   Loader,
   Info,
   Download,
+  Clock,
 } from "lucide-react";
 import {
   Alert,
@@ -68,7 +69,7 @@ export interface Seminar {
 
 const StudentSeminarProposal = () => {
   const [currentStep, setCurrentStep] = useState<string>("step1");
-  const [maxStepReached, setMaxStepReached] = useState<number>(1);
+  // const [maxStepReached, setMaxStepReached] = useState<number>(1);
   const { user, token } = useAuth();
   const lecturersQuery = useApiData({ type: "lecturers" });
   const lecturers = lecturersQuery.data || [];
@@ -362,32 +363,6 @@ const StudentSeminarProposal = () => {
   const allDocumentsUploaded = () =>
     Object.values(seminar.documents).every((doc) => doc.uploaded);
 
-  const getStatusBadge = (step: string) => {
-    const currentStepNum = Number.parseInt(currentStep.replace("step", ""));
-    const stepNum = Number.parseInt(step.replace("step", ""));
-    if (stepNum < maxStepReached) {
-      return (
-        <Badge className="bg-primary-100 text-env-darker border-env-lighter">
-          Sudah
-        </Badge>
-      );
-    } else if (stepNum === currentStepNum) {
-      return (
-        <Badge className="bg-primary-200 text-env-darker border-env-lighter border-2">
-          Belum
-        </Badge>
-      );
-    } else {
-      return (
-        <Badge className="bg-white text-env-darker border-env-lighter">
-          Pending
-        </Badge>
-      );
-    }
-  };
-
-  // const isScheduled = seminar.status === "SCHEDULED";
-
   const steps = [
     "Detail Seminar",
     "Upload Dokumen",
@@ -416,7 +391,7 @@ const StudentSeminarProposal = () => {
         return;
       }
       setCurrentStep(`step${nextStepNum}`);
-      setMaxStepReached((prev) => Math.max(prev, nextStepNum));
+      // setMaxStepReached((prev) => Math.max(prev, nextStepNum));
     }
   };
 
@@ -458,15 +433,6 @@ const StudentSeminarProposal = () => {
       SCHEDULED: 75,
       COMPLETED: 100,
     }[seminar.status!] || 0;
-
-  const statusMessage =
-    {
-      DRAFT: "Masukkan detail seminar untuk melanjutkan.",
-      SUBMITTED: "Menunggu penjadwalan oleh koordinator.",
-      SCHEDULED: "Jadwal telah ditentukan, unduh undangan!",
-      COMPLETED: "Seminar selesai!",
-    }[seminar.status!] || "Belum Dimulai";
-
   return (
     <StudentLayout>
       <div className="flex flex-col mb-4">
@@ -474,7 +440,7 @@ const StudentSeminarProposal = () => {
           Pendaftaran Seminar Proposal
         </h1>
       </div>
-      <div className="grid grid-cols-1 auto-rows-[minmax(120px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="col-span-1 sm:col-span-2 lg:col-span-2 py-4 px-8 row-span-2 border-2 border-pastel-green relative overflow-hidden rounded-xl bg-env-light">
           <img
             src={studentImg}
@@ -486,8 +452,8 @@ const StudentSeminarProposal = () => {
               <h1 className="text-lg font-heading font-bold text-primary-foreground">
                 Hai, {user.profile.name}
               </h1>
-              <div className="w-10 flex items-center justify-center h-10 rounded-full bg-pastel-yellow">
-                <Info className="text-jewel-yellow" />
+              <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-yellow">
+                <Info className="text-jewel-yellow  w-4 md:w-6 h-4 md:h-6" />
               </div>
             </div>
             <p className="text-env-darker text-lg font-semibold">
@@ -524,8 +490,8 @@ const StudentSeminarProposal = () => {
             <h1 className="text-base md:text-lg font-heading font-bold text-env-light">
               Jadwal Seminar
             </h1>
-            <div className="w-10 flex items-center justify-center h-10 rounded-full bg-pastel-red">
-              <Calendar className="text-jewel-red" />
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center  rounded-full bg-pastel-red">
+              <Clock className="text-jewel-red  w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
           <p className="-mt-2 text-env-darker font-bold md:text-2xl text-xl">
@@ -540,8 +506,8 @@ const StudentSeminarProposal = () => {
             <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
               Hari & Tanggal
             </h1>
-            <div className="w-10 flex items-center justify-center h-10 rounded-full bg-pastel-purple">
-              <Calendar className="text-jewel-purple" />
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-purple">
+              <Calendar className="text-jewel-purple  w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
           <p className="-mt-2 text-env-darker font-bold md:text-2xl text-xl">
@@ -558,8 +524,8 @@ const StudentSeminarProposal = () => {
             <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
               Status Seminar Anda
             </h1>
-            <div className="w-10 flex items-center justify-center h-10 rounded-full bg-pastel-green">
-              <Loader className="text-jewel-yellbg-pastel-green" />
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-green">
+              <Loader className="text-jewel-yellbg-pastel-green w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
           <div className="w-4/5 bg-pastel-green rounded-full h-2.5">

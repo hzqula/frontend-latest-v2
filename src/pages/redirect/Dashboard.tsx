@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
 
 import StudentDashboard from "../student/Dashboard";
+import LecturerDashboard from "../lecturer/Dashboard";
 // import CoordinatorDashboard from "../coordinator/Dashboard";
-// import LecturerDashboard from "../lecturer/Dashboard";
 
 enum UserRole {
   STUDENT = "STUDENT",
@@ -45,8 +45,8 @@ const Dashboard: React.FC = () => {
     case UserRole.STUDENT:
       return <StudentDashboard />;
 
-    // case UserRole.LECTURER:
-    //   return <LecturerDashboard />;
+    case UserRole.LECTURER:
+      return <LecturerDashboard />;
 
     // case UserRole.COORDINATOR:
     //   return <CoordinatorDashboard />;

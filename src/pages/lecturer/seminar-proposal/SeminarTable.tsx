@@ -27,11 +27,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, User, MapPin, Info } from "lucide-react";
+import { Seminar } from "@/configs/types";
 
-export interface SeminarTableProps {
-  seminars: any[];
+type SortableSeminarKeys = "time" | "student";
+
+interface SeminarTableProps {
+  seminars: Seminar[];
   userNip: string;
-  openDetailsModal: (seminar: any) => void;
+  openDetailsModal: (seminar: Seminar) => void;
   handleAssessNavigation: (seminarId: number) => void;
 }
 
@@ -42,7 +45,7 @@ const SeminarTable = ({
   handleAssessNavigation,
 }: SeminarTableProps) => {
   const [sortConfig, setSortConfig] = useState<{
-    key: string;
+    key: SortableSeminarKeys | "";
     direction: "ascending" | "descending" | null;
   }>({
     key: "",
@@ -75,17 +78,17 @@ const SeminarTable = ({
     return currentDate > seminarDate;
   };
 
-  const hasBeenAssessed = (seminar: any) => {
+  const hasBeenAssessed = (seminar: Seminar) => {
     if (!seminar.assessments || seminar.assessments.length === 0) {
       return false;
     }
     return seminar.assessments.some(
-      (assessment: any) => assessment.lecturerNIP === userNip
+      (assessment) => assessment.lecturerNIP === userNip
     );
   };
 
   // Sorting logic
-  const requestSort = (key: string) => {
+  const requestSort = (key: SortableSeminarKeys) => {
     let direction: "ascending" | "descending" | null = "ascending";
 
     if (sortConfig.key === key) {
@@ -105,7 +108,7 @@ const SeminarTable = ({
 
     if (sortConfig.key && sortConfig.direction) {
       filteredData.sort((a, b) => {
-        let aValue, bValue;
+        let aValue: string | number, bValue: string | number;
 
         if (sortConfig.key === "time") {
           aValue = new Date(a.time).getTime();
@@ -114,8 +117,7 @@ const SeminarTable = ({
           aValue = a.student?.name?.toLowerCase() || "";
           bValue = b.student?.name?.toLowerCase() || "";
         } else {
-          aValue = a[sortConfig.key];
-          bValue = b[sortConfig.key];
+          return 0;
         }
 
         if (aValue < bValue) {
@@ -162,7 +164,7 @@ const SeminarTable = ({
                 onClick={() => requestSort("time")}
                 className="cursor-pointer"
               >
-                Jadwal Seminar <ArrowUpDown size={16} className="inline ml-1" />
+                Jadwal <ArrowUpDown size={16} className="inline ml-1" />
               </TableHead>
               <TableHead>Tempat</TableHead>
               <TableHead className="text-center">Keterangan</TableHead>
@@ -171,7 +173,7 @@ const SeminarTable = ({
           </TableHeader>
           <TableBody>
             {paginatedSeminars.length > 0 ? (
-              paginatedSeminars.map((seminar: any, index: number) => {
+              paginatedSeminars.map((seminar: Seminar, index: number) => {
                 const isAssessed = hasBeenAssessed(seminar);
                 const startIndex = (currentPage - 1) * itemsPerPage;
                 return (
@@ -185,7 +187,7 @@ const SeminarTable = ({
                     <TableCell>
                       <div>{seminar.student?.name || "N/A"}</div>
                       <div className="text-muted-foreground">
-                        {seminar.studentNIM}
+                        {seminar.student?.nim || "N/A"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -218,11 +220,11 @@ const SeminarTable = ({
                         size="sm"
                         className={`${
                           canAssessSeminar(seminar.time)
-                            ? ""
-                            : "bg-primary-400 text-white opacity-50 cursor-not-allowed"
+                            ? " bg-env-base"
+                            : "cursor-not-allowed"
                         }`}
                         disabled={!canAssessSeminar(seminar.time)}
-                        onClick={() => handleAssessNavigation(seminar.id)}
+                        onClick={() => handleAssessNavigation(seminar.id!)}
                       >
                         Nilai
                       </Button>
@@ -246,7 +248,7 @@ const SeminarTable = ({
 
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {paginatedSeminars.length > 0 ? (
-          paginatedSeminars.map((seminar: any) => {
+          paginatedSeminars.map((seminar: Seminar) => {
             const isAssessed = hasBeenAssessed(seminar);
             return (
               <Card
@@ -279,7 +281,7 @@ const SeminarTable = ({
                           {seminar.student?.name || "N/A"}
                         </span>
                         <span className="text-muted-foreground text-xs ml-2">
-                          ({seminar.studentNIM})
+                          ({seminar.student?.nim || "N/A"})
                         </span>
                       </div>
                     </div>
@@ -318,7 +320,7 @@ const SeminarTable = ({
                         : "cursor-not-allowed"
                     }`}
                     disabled={!canAssessSeminar(seminar.time)}
-                    onClick={() => handleAssessNavigation(seminar.id)}
+                    onClick={() => handleAssessNavigation(seminar.id!)}
                   >
                     Nilai
                   </Button>

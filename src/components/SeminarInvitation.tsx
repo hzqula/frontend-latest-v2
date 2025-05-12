@@ -1,24 +1,10 @@
 import { useRef, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import Logo from "../assets/img/logo.png";
-
-interface Seminar {
-  id: number | null;
-  title: string;
-  student?: { nim: string; name: string } | null;
-  status: "DRAFT" | "SUBMITTED" | "SCHEDULED" | "COMPLETED" | null;
-  advisors: { lecturerNIP: string; lecturerName?: string }[];
-  documents: Record<
-    string,
-    { uploaded: boolean; fileName?: string; fileURL?: string }
-  >;
-  time: string | null;
-  room: string | null;
-  assessors: { lecturerNIP: string; lecturerName?: string }[];
-}
+import { RegisterSeminar } from "@/configs/types";
 
 interface SeminarInvitationProps {
-  seminar: Seminar;
+  seminar: RegisterSeminar;
   shouldPrint: boolean;
   onPrintComplete: () => void;
 }

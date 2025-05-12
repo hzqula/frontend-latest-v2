@@ -40,32 +40,7 @@ import SeminarInvitation from "../../../components/SeminarInvitation";
 import EvenReport from "@/components/EventReport";
 import studentImg from "@/assets/img/student-ill.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-
-export interface Seminar {
-  id: number | null;
-  title: string;
-  student?: {
-    nim: string;
-    name: string;
-  } | null;
-  status: "DRAFT" | "SUBMITTED" | "SCHEDULED" | "COMPLETED" | null;
-  advisors: {
-    lecturerNIP: string;
-    lecturerName?: string;
-    profilePicture?: string;
-  }[];
-  documents: Record<
-    string,
-    { uploaded: boolean; fileName?: string; fileURL?: string }
-  >;
-  time: string | null;
-  room: string | null;
-  assessors: {
-    lecturerNIP: string;
-    lecturerName?: string;
-    profilePicture?: string;
-  }[];
-}
+import { Lecturer, RegisterSeminar } from "@/configs/types";
 
 const StudentSeminarProposal = () => {
   const [currentStep, setCurrentStep] = useState<string>("step1");
@@ -79,7 +54,7 @@ const StudentSeminarProposal = () => {
     param: user?.profile.nim,
   });
 
-  const [seminar, setSeminar] = useState<Seminar>({
+  const [seminar, setSeminar] = useState<RegisterSeminar>({
     id: null,
     title: "",
     student: null,
@@ -125,75 +100,82 @@ const StudentSeminarProposal = () => {
         title: seminarData.title,
         student: seminarData.student,
         status: seminarData.status,
-        advisors: seminarData.advisors.map((advisor: any) => ({
-          lecturerNIP: advisor.lecturerNIP,
-          lecturerName: advisor.lecturer?.name,
-          profilePicture: advisor.lecturer?.profilePicture,
-        })),
+        advisors: seminarData.advisors.map(
+          (advisor: { lecturer?: Lecturer }) => ({
+            lecturerNIP: advisor.lecturer?.name,
+            lecturerName: advisor.lecturer?.name,
+            profilePicture: advisor.lecturer?.profilePicture,
+          })
+        ),
         documents: {
           THESIS_PROPOSAL: {
             uploaded: !!seminarData.documents.find(
-              (d: any) => d.documentType === "THESIS_PROPOSAL"
+              (document: any) => document.documentType === "THESIS_PROPOSAL"
             ),
             fileName: seminarData.documents.find(
-              (d: any) => d.documentType === "THESIS_PROPOSAL"
+              (document: any) => document.documentType === "THESIS_PROPOSAL"
             )?.fileName,
             fileURL: seminarData.documents.find(
-              (d: any) => d.documentType === "THESIS_PROPOSAL"
+              (document: any) => document.documentType === "THESIS_PROPOSAL"
             )?.fileURL,
           },
           ADVISOR_AVAILABILITY: {
             uploaded: !!seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_AVAILABILITY"
+              (document: any) =>
+                document.documentType === "ADVISOR_AVAILABILITY"
             ),
             fileName: seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_AVAILABILITY"
+              (document: any) =>
+                document.documentType === "ADVISOR_AVAILABILITY"
             )?.fileName,
             fileURL: seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_AVAILABILITY"
+              (document: any) =>
+                document.documentType === "ADVISOR_AVAILABILITY"
             )?.fileURL,
           },
           KRS: {
             uploaded: !!seminarData.documents.find(
-              (d: any) => d.documentType === "KRS"
+              (document: any) => document.documentType === "KRS"
             ),
             fileName: seminarData.documents.find(
-              (d: any) => d.documentType === "KRS"
+              (document: any) => document.documentType === "KRS"
             )?.fileName,
             fileURL: seminarData.documents.find(
-              (d: any) => d.documentType === "KRS"
+              (document: any) => document.documentType === "KRS"
             )?.fileURL,
           },
           ADVISOR_ASSISTANCE: {
             uploaded: !!seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_ASSISTANCE"
+              (document: any) => document.documentType === "ADVISOR_ASSISTANCE"
             ),
             fileName: seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_ASSISTANCE"
+              (document: any) => document.documentType === "ADVISOR_ASSISTANCE"
             )?.fileName,
             fileURL: seminarData.documents.find(
-              (d: any) => d.documentType === "ADVISOR_ASSISTANCE"
+              (document: any) => document.documentType === "ADVISOR_ASSISTANCE"
             )?.fileURL,
           },
           SEMINAR_ATTENDANCE: {
             uploaded: !!seminarData.documents.find(
-              (d: any) => d.documentType === "SEMINAR_ATTENDANCE"
+              (document: any) => document.documentType === "SEMINAR_ATTENDANCE"
             ),
             fileName: seminarData.documents.find(
-              (d: any) => d.documentType === "SEMINAR_ATTENDANCE"
+              (document: any) => document.documentType === "SEMINAR_ATTENDANCE"
             )?.fileName,
             fileURL: seminarData.documents.find(
-              (d: any) => d.documentType === "SEMINAR_ATTENDANCE"
+              (document: any) => document.documentType === "SEMINAR_ATTENDANCE"
             )?.fileURL,
           },
         },
         time: seminarData.time,
         room: seminarData.room,
-        assessors: seminarData.assessors.map((assessor: any) => ({
-          lecturerNIP: assessor.lecturerNIP,
-          lecturerName: assessor.lecturer?.name,
-          profilePicture: assessor.lecturer?.profilePicture,
-        })),
+        assessors: seminarData.assessors.map(
+          (assessor: { lecturer?: Lecturer }) => ({
+            lecturerNIP: assessor.lecturer?.nip,
+            lecturerName: assessor.lecturer?.name,
+            profilePicture: assessor.lecturer?.profilePicture,
+          })
+        ),
       });
 
       if (seminarData.status === "DRAFT") setCurrentStep("step1");
@@ -254,15 +236,18 @@ const StudentSeminarProposal = () => {
           {
             lecturerNIP: data.advisor1,
             lecturerName:
-              lecturers.find((l: any) => l.nip === data.advisor1)?.name || "",
+              lecturers.find(
+                (lecturer: Lecturer) => lecturer.nip === data.advisor1
+              )?.name || "",
           },
           ...(data.advisor2
             ? [
                 {
                   lecturerNIP: data.advisor2,
                   lecturerName:
-                    lecturers.find((l: any) => l.nip === data.advisor2)?.name ||
-                    "",
+                    lecturers.find(
+                      (lecturer: Lecturer) => lecturer.nip === data.advisor2
+                    )?.name || "",
                 },
               ]
             : []),
@@ -600,7 +585,7 @@ const StudentSeminarProposal = () => {
                               alt="advisor-image"
                               className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                             />
-                            <AvatarFallback className="bg-primary-100 text-primary-800">
+                            <AvatarFallback className="bg-primary-100 text-env-darker">
                               {advisor
                                 .lecturerName!.split(" ")
                                 .map((n) => n[0])
@@ -608,7 +593,7 @@ const StudentSeminarProposal = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="text-xs md:text-sm font-medium text-primary-800">
+                            <div className="text-xs md:text-sm font-medium text-env-darker">
                               {advisor.lecturerName}
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -793,11 +778,11 @@ const StudentSeminarProposal = () => {
                     <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
                       Mahasiswa
                     </h3>
-                    <div className="flex flex-col">
-                      <p className="text-env-darker text-sm md:text-base font-bold">
+                    <div>
+                      <p className="text-env-darker text-sm md:text-base font-bold -mb-1">
                         {seminar.student?.name}
                       </p>
-                      <p className="text-env-darker text-sm md:text-base font-bold">
+                      <p className="text-muted-foreground text-xs md:text-sm font-medium">
                         {seminar.student?.nim}
                       </p>
                     </div>
@@ -831,7 +816,7 @@ const StudentSeminarProposal = () => {
                               alt="advisor-image"
                               className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                             />
-                            <AvatarFallback className="bg-primary-100 text-primary-800">
+                            <AvatarFallback className="bg-primary-100 text-env-darker">
                               {advisor
                                 .lecturerName!.split(" ")
                                 .map((n) => n[0])
@@ -839,7 +824,7 @@ const StudentSeminarProposal = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="text-xs md:text-sm font-medium text-primary-800">
+                            <div className="text-xs md:text-sm font-medium text-env-darker">
                               {advisor.lecturerName}
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -871,7 +856,7 @@ const StudentSeminarProposal = () => {
                                 alt="assessor-image"
                                 className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                               />
-                              <AvatarFallback className="bg-primary-100 text-primary-800">
+                              <AvatarFallback className="bg-primary-100 text-env-darker">
                                 {assessor
                                   .lecturerName!.split(" ")
                                   .map((n) => n[0])
@@ -879,7 +864,7 @@ const StudentSeminarProposal = () => {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <div className="text-xs md:text-sm font-medium text-primary-800">
+                              <div className="text-xs md:text-sm font-medium text-env-darker">
                                 {assessor.lecturerName}
                               </div>
                               <div className="text-xs text-muted-foreground">
@@ -897,7 +882,7 @@ const StudentSeminarProposal = () => {
                   </div>
                   <div>
                     <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
-                      Waktu
+                      Jadwal Seminar
                     </h3>
                     <p className="text-env-darker text-sm md:text-base font-bold">
                       {seminar.time
@@ -910,7 +895,7 @@ const StudentSeminarProposal = () => {
                   </div>
                   <div>
                     <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
-                      Ruangan
+                      Tempat Seminar
                     </h3>
                     <p className="text-env-darker text-sm md:text-base font-bold">
                       {seminar.room || "Belum ditentukan"}
@@ -1040,7 +1025,7 @@ const StudentSeminarProposal = () => {
                               alt="advisor-image"
                               className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                             />
-                            <AvatarFallback className="bg-primary-100 text-primary-800">
+                            <AvatarFallback className="bg-primary-100 text-env-darker">
                               {advisor
                                 .lecturerName!.split(" ")
                                 .map((n) => n[0])
@@ -1048,7 +1033,7 @@ const StudentSeminarProposal = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="text-xs md:text-sm font-medium text-primary-800">
+                            <div className="text-xs md:text-sm font-medium text-env-darker">
                               {advisor.lecturerName}
                             </div>
                             <div className="text-xs text-muted-foreground">
@@ -1080,7 +1065,7 @@ const StudentSeminarProposal = () => {
                                 alt="assessor-image"
                                 className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                               />
-                              <AvatarFallback className="bg-primary-100 text-primary-800">
+                              <AvatarFallback className="bg-primary-100 text-env-darker">
                                 {assessor
                                   .lecturerName!.split(" ")
                                   .map((n) => n[0])
@@ -1088,7 +1073,7 @@ const StudentSeminarProposal = () => {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <div className="text-xs md:text-sm font-medium text-primary-800">
+                              <div className="text-xs md:text-sm font-medium text-env-darker">
                                 {assessor.lecturerName}
                               </div>
                               <div className="text-xs text-muted-foreground">
@@ -1106,7 +1091,7 @@ const StudentSeminarProposal = () => {
                   </div>
                   <div>
                     <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
-                      Waktu
+                      Jadwal Seminar
                     </h3>
                     <p className="text-env-darker text-sm md:text-base font-bold">
                       {seminar.time
@@ -1119,7 +1104,7 @@ const StudentSeminarProposal = () => {
                   </div>
                   <div>
                     <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
-                      Ruangan
+                      Tempat Seminar
                     </h3>
                     <p className="text-env-darker text-sm md:text-base font-bold">
                       {seminar.room || "Belum ditentukan"}

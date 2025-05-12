@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DoughnutChartKeterangan from "./DoughnutChartKeterangan";
-import { Seminar } from "@/pages/student/seminar-proposal/SeminarProposal";
 import { Badge } from "@/components/ui/badge";
+import { Lecturer, Seminar } from "@/configs/types";
 
 const LecturerSeminarProposal = () => {
   const { user, token } = useAuth();
@@ -73,21 +73,24 @@ const LecturerSeminarProposal = () => {
   const seminars = seminarsQuery.data || [];
 
   const scheduledAndCompletedSeminars = seminars.filter(
-    (seminar: any) =>
+    (seminar: Seminar) =>
       (seminar.status === "SCHEDULED" || seminar.status === "COMPLETED") &&
-      seminar.type === "PROPOSAL"
+      seminar.types === "PROPOSAL"
   );
 
-  const advisedSeminars = scheduledAndCompletedSeminars.filter((seminar: any) =>
-    seminar.advisors.some(
-      (advisor: any) => advisor.lecturer?.nip === user.profile.nip
-    )
+  const advisedSeminars = scheduledAndCompletedSeminars.filter(
+    (seminar: Seminar) =>
+      seminar.advisors.some(
+        (advisor: { lecturer?: Lecturer }) =>
+          advisor.lecturer?.nip === user.profile.nip
+      )
   );
 
   const assessedSeminars = scheduledAndCompletedSeminars.filter(
-    (seminar: any) =>
+    (seminar: Seminar) =>
       seminar.assessors.some(
-        (assessor: any) => assessor.lecturer?.nip === user.profile.nip
+        (assessor: { lecturer?: Lecturer }) =>
+          assessor.lecturer?.nip === user.profile.nip
       )
   );
 
@@ -107,12 +110,12 @@ const LecturerSeminarProposal = () => {
     });
   };
 
-  const openDetailsModal = (seminar: any) => {
+  const openDetailsModal = (seminar: Seminar) => {
     setSelectedSeminar(seminar);
     setDetailsModalOpen(true);
   };
 
-  const hasBeenAssessed = (seminar: any) => {
+  const hasBeenAssessed = (seminar: Seminar) => {
     if (!seminar.assessments || seminar.assessments.length === 0) {
       return false;
     }
@@ -120,11 +123,11 @@ const LecturerSeminarProposal = () => {
       (assessment: any) => assessment.lecturerNIP === user.profile.nip
     );
   };
-  const filteredAdvisedSeminars = advisedSeminars.filter((seminar: any) => {
+  const filteredAdvisedSeminars = advisedSeminars.filter((seminar: Seminar) => {
     const matchesSearch =
       seminar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       seminar.student?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.studentNIM.toLowerCase().includes(searchQuery.toLowerCase());
+      seminar.student?.nim.toLowerCase().includes(searchQuery.toLowerCase());
     const isAssessed = hasBeenAssessed(seminar);
     const matchesStatus =
       statusFilter === "all" ||
@@ -133,18 +136,22 @@ const LecturerSeminarProposal = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const filteredAssessedSeminars = assessedSeminars.filter((seminar: any) => {
-    const matchesSearch =
-      seminar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.student?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.studentNIM.toLowerCase().includes(searchQuery.toLowerCase());
-    const isAssessed = hasBeenAssessed(seminar);
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "assessed" && isAssessed) ||
-      (statusFilter === "notAssessed" && !isAssessed);
-    return matchesSearch && matchesStatus;
-  });
+  const filteredAssessedSeminars = assessedSeminars.filter(
+    (seminar: Seminar) => {
+      const matchesSearch =
+        seminar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        seminar.student?.name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        seminar.student?.nim.toLowerCase().includes(searchQuery.toLowerCase());
+      const isAssessed = hasBeenAssessed(seminar);
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "assessed" && isAssessed) ||
+        (statusFilter === "notAssessed" && !isAssessed);
+      return matchesSearch && matchesStatus;
+    }
+  );
 
   const currentDate = new Date();
   const oldestUnassessedSeminar = [...advisedSeminars, ...assessedSeminars]
@@ -197,7 +204,7 @@ const LecturerSeminarProposal = () => {
     <LecturerLayout>
       <div className="flex flex-col mb-4">
         <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
-          Pendaftaran Seminar Proposal
+          Seminar Proposal
         </h1>
         <p className="text-primary md:text-base text-sm">
           {activeTab === "advised"
@@ -386,7 +393,7 @@ const LecturerSeminarProposal = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex gap-4 items-center w-full mb-4 justify-between">
+          <div className="flex gap-4 items-center mb-4 justify-between">
             <TabsList className="bg-env-base">
               <TabsTrigger
                 value="advised"

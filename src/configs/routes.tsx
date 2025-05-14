@@ -10,11 +10,14 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import SeminarProposal from "@/pages/redirect/SeminarProposal";
 import Dashboard from "@/pages/redirect/Dashboard";
+import SeminarHasil from "@/pages/redirect/SeminarHasil";
+import AssessSeminarProposal from "@/pages/lecturer/seminar-proposal/AssessSeminar";
+import Landing from "@/pages/landing/Landing";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
 
 export const publicRoutes: RouteObject[] = [
-  // { path: "/", element: <Landing /> },
+  { path: "/", element: <Landing /> },
   // { path: "/galeri", element: <Galeri /> },
   // { path: "/panduan/format-penulisan-ta", element: <FormatPenulisanTA /> },
   // { path: "/panduan/sop", element: <SOP /> },
@@ -32,8 +35,12 @@ export const privateRoutes: RouteObject[] = [
     path: "/seminar-proposal",
     element: <SeminarProposal />,
   },
-  // {
-  //   path: "/seminar-proposal/assess/:seminarId",
-  //   element: <AssessSeminarProposal />,
-  // },
+  {
+    path: "/seminar-hasil",
+    element: <SeminarHasil />,
+  },
+  {
+    path: "/seminar-proposal/assess/:seminarId",
+    element: <AssessSeminarProposal />,
+  },
 ];

@@ -3,7 +3,7 @@ export interface Seminar {
   title: string;
   student?: Student;
   status: "DRAFT" | "SUBMITTED" | "SCHEDULED" | "COMPLETED" | null;
-  types: "HASIL" | "PROPOSAL" | "all" | null;
+  type: "HASIL" | "PROPOSAL";
   advisors: {
     lecturer?: Lecturer;
   }[];

@@ -13,6 +13,7 @@ import Dashboard from "@/pages/redirect/Dashboard";
 import SeminarHasil from "@/pages/redirect/SeminarHasil";
 import AssessSeminarProposal from "@/components/AssessSeminar";
 import Landing from "@/pages/landing/Landing";
+import SecurityLog from "@/pages/coordinator/SecurityLog";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
 
@@ -38,6 +39,10 @@ export const privateRoutes: RouteObject[] = [
   {
     path: "/seminar-hasil",
     element: <SeminarHasil />,
+  },
+  {
+    path: "/log",
+    element: <SecurityLog />,
   },
   {
     path: "/seminar-proposal/assess/:seminarId",

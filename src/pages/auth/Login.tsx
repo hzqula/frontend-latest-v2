@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
   CardContent,
@@ -11,10 +11,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Eye,
   EyeOff,
@@ -24,7 +24,7 @@ import {
   Leaf,
   GraduationCap,
 } from "lucide-react";
-import { Alert, AlertDescription } from "../../components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
 
 // Skema validasi Zod
@@ -136,7 +136,6 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-env-light/10 to-env-base/5">
-      {/* Header dengan wave SVG */}
       <div className="bg-env-base text-white py-4 relative overflow-hidden">
         <div className="container mx-auto px-4 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2">
@@ -145,7 +144,9 @@ const Login: React.FC = () => {
               Teknik Lingkungan
             </h1>
           </div>
-          <div className="text-xs md:text-sm font-medium">Universitas Riau</div>
+          <div className="text-base md:text-lg font-bold text-env-darker ">
+            Universitas Riau
+          </div>
         </div>
         {/* Wave SVG untuk dekorasi background */}
         <div className="absolute bottom-0 left-0 w-full">

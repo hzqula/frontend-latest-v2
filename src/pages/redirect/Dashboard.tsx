@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
-
+import { useAuth } from "../../contexts/AuthContext";
 import StudentDashboard from "../student/Dashboard";
+import CoordinatorDashboard from "../coordinator/Dashboard";
 import LecturerDashboard from "../lecturer/Dashboard";
-// import CoordinatorDashboard from "../coordinator/Dashboard";
 
 enum UserRole {
   STUDENT = "STUDENT",
@@ -12,26 +11,7 @@ enum UserRole {
 }
 
 const Dashboard: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-
-  useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-
-    if (storedUserData) {
-      try {
-        setUserData(JSON.parse(storedUserData));
-      } catch (error) {
-        console.error("Terjadi kesalahan saat nge-parsing data", error);
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/sign-in" replace />;
-  }
+  const { token, userRole, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -41,16 +21,17 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  switch (userData.role) {
+  if (!token || !userRole) {
+    return <Navigate to="/login" replace />;
+  }
+
+  switch (userRole) {
     case UserRole.STUDENT:
       return <StudentDashboard />;
-
     case UserRole.LECTURER:
       return <LecturerDashboard />;
-
-    // case UserRole.COORDINATOR:
-    //   return <CoordinatorDashboard />;
-
+    case UserRole.COORDINATOR:
+      return <CoordinatorDashboard />;
     default:
       return <Navigate to="/login" replace />;
   }

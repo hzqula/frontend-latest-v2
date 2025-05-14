@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
-import StudentSeminarProposal from "../student/seminar-proposal/SeminarProposal";
-// import CoordinatorSeminarProposal from "../coordinator/seminar-proposal/SeminarProposal";
-import LecturerSeminarProposal from "../lecturer/seminar-proposal/SeminarProposal";
+import { useAuth } from "../../contexts/AuthContext";
+import StudentSeminarProposal from "../student/SeminarProposal";
+import CoordinatorSeminarProposal from "../coordinator/SeminarProposal";
+import LecturerSeminarProposal from "../lecturer/SeminarProposal";
+import AssessSeminarProposal from "../../components/AssessSeminar";
 
 enum UserRole {
   STUDENT = "STUDENT",
@@ -11,26 +12,7 @@ enum UserRole {
 }
 
 const SeminarProposal: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-
-  useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-
-    if (storedUserData) {
-      try {
-        setUserData(JSON.parse(storedUserData));
-      } catch (error) {
-        console.error("Terjadi kesalahan saat nge-parsing data", error);
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+  const { token, userRole, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -40,11 +22,15 @@ const SeminarProposal: React.FC = () => {
     );
   }
 
-  switch (userData.role) {
+  if (!token || !userRole) {
+    return <Navigate to="/login" replace />;
+  }
+
+  switch (userRole) {
     case UserRole.STUDENT:
       return <StudentSeminarProposal />;
-    // case UserRole.COORDINATOR:
-    //   return <CoordinatorSeminarProposal />;
+    case UserRole.COORDINATOR:
+      return <CoordinatorSeminarProposal />;
     case UserRole.LECTURER:
       return <LecturerSeminarProposal />;
     default:

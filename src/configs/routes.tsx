@@ -11,7 +11,7 @@ import Register from "../pages/auth/Register";
 import SeminarProposal from "@/pages/redirect/SeminarProposal";
 import Dashboard from "@/pages/redirect/Dashboard";
 import SeminarHasil from "@/pages/redirect/SeminarHasil";
-import AssessSeminarProposal from "@/pages/lecturer/seminar-proposal/AssessSeminar";
+import AssessSeminarProposal from "@/components/AssessSeminar";
 import Landing from "@/pages/landing/Landing";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";

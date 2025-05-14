@@ -71,3 +71,17 @@ export interface Lecturer {
   name: string;
   profilePicture?: string;
 }
+
+export interface User {
+  email: string;
+}
+
+export interface SecurityLogs {
+  id: number;
+  userId: number;
+  user: User;
+  action: string;
+  ipAddress: string;
+  device: string;
+  createdAt: string;
+}

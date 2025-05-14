@@ -31,19 +31,19 @@ import { Seminar } from "@/configs/types";
 
 type SortableSeminarKeys = "time" | "student";
 
-interface SeminarTableProps {
+interface TableSeminarsAssessmentProps {
   seminars: Seminar[];
   userNip: string;
   openDetailsModal: (seminar: Seminar) => void;
   handleAssessNavigation: (seminarId: number) => void;
 }
 
-const SeminarTable = ({
+const TableSeminarsAssessment = ({
   seminars,
   userNip,
   openDetailsModal,
   handleAssessNavigation,
-}: SeminarTableProps) => {
+}: TableSeminarsAssessmentProps) => {
   const [sortConfig, setSortConfig] = useState<{
     key: SortableSeminarKeys | "";
     direction: "ascending" | "descending" | null;
@@ -410,4 +410,4 @@ const SeminarTable = ({
   );
 };
 
-export default SeminarTable;
+export default TableSeminarsAssessment;

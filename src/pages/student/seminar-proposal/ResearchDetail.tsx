@@ -71,8 +71,8 @@ const ResearchDetailsModal = ({
   const [showSecondSupervisor, setShowSecondSupervisor] = useState<boolean>(
     !!initialData.advisor2
   );
-  const [assessor1Open, setAssessor1Open] = useState(false);
-  const [assessor2Open, setAssessor2Open] = useState(false);
+  const [advisor1Open, setAdvisor1Open] = useState(false);
+  const [advisor2Open, setAdvisor2Open] = useState(false);
 
   const lecturersQuery = useApiData({ type: "lecturers" });
   const availableSupervisors = lecturersQuery.data || [];
@@ -131,12 +131,12 @@ const ResearchDetailsModal = ({
               name="researchTitle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
+                  <FormLabel className="font-medium text-sm -mb-1 md:mb-0 block text-env-darker">
                     Judul Penelitian
                   </FormLabel>
                   <FormControl>
                     <Input
-                      className="text-xs md:text-sm md:placeholder:text-base placeholder:text-sm"
+                      className="text-xs md:text-sm md:placeholder:text-sm placeholder:text-xs"
                       placeholder="Masukkan judul penelitian Anda"
                       {...field}
                     />
@@ -152,31 +152,28 @@ const ResearchDetailsModal = ({
                 name="advisor1"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
+                    <FormLabel className="font-medium text-sm -mb-1 md:mb-0 block text-env-darker">
                       Dosen Pembimbing I
                     </FormLabel>
-                    <Popover
-                      open={assessor1Open}
-                      onOpenChange={setAssessor1Open}
-                    >
+                    <Popover open={advisor1Open} onOpenChange={setAdvisor1Open}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             role="combobox"
-                            aria-expanded={assessor1Open}
+                            aria-expanded={advisor1Open}
                             className={cn(
                               "w-full justify-between border-primary-400 text-primary-800",
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            <span className="truncate">
+                            <span className="truncate md:text-sm text-xs">
                               {field.value
                                 ? availableSupervisors.find(
-                                    (supervisor: { nip: string }) =>
-                                      supervisor.nip === field.value
+                                    (advisor: { nip: string }) =>
+                                      advisor.nip === field.value
                                   )?.name
-                                : "Pilih dosen"}
+                                : "Pilih Dosen Pembimbing 2"}
                             </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -209,7 +206,7 @@ const ResearchDetailsModal = ({
                                           ? ""
                                           : supervisor.nip
                                       );
-                                      setAssessor1Open(false);
+                                      setAdvisor1Open(false);
                                     }}
                                     className="cursor-pointer pointer-events-auto"
                                   >
@@ -267,19 +264,19 @@ const ResearchDetailsModal = ({
                   name="advisor2"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-medium text-sm -mb-1 md:mb-2 block text-env-darker">
+                      <FormLabel className="font-medium text-sm -mb-1 md:mb-0 block text-env-darker">
                         Dosen Pembimbing II
                       </FormLabel>
                       <Popover
-                        open={assessor2Open}
-                        onOpenChange={setAssessor2Open}
+                        open={advisor2Open}
+                        onOpenChange={setAdvisor2Open}
                       >
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant="outline"
                               role="combobox"
-                              aria-expanded={assessor2Open}
+                              aria-expanded={advisor2Open}
                               className={cn(
                                 "w-full justify-between border-primary-400 text-primary-800",
                                 !field.value && "text-muted-foreground"
@@ -291,7 +288,7 @@ const ResearchDetailsModal = ({
                                       (supervisor: { nip: string }) =>
                                         supervisor.nip === field.value
                                     )?.name
-                                  : "Pilih dosen"}
+                                  : "Pilih Dosen Pembimbing 1"}
                               </span>
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -330,7 +327,7 @@ const ResearchDetailsModal = ({
                                               ? ""
                                               : supervisor.nip
                                           );
-                                          setAssessor2Open(false);
+                                          setAdvisor2Open(false);
                                         }}
                                         className="cursor-pointer pointer-events-auto"
                                       >

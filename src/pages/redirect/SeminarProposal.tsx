@@ -3,7 +3,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import StudentSeminarProposal from "../student/SeminarProposal";
 import CoordinatorSeminarProposal from "../coordinator/SeminarProposal";
 import LecturerSeminarProposal from "../lecturer/SeminarProposal";
-import AssessSeminarProposal from "../../components/AssessSeminar";
 
 enum UserRole {
   STUDENT = "STUDENT",

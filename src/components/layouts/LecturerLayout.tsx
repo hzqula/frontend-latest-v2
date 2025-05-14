@@ -72,7 +72,7 @@ interface LecturerLayoutProps {
 }
 
 const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
-  const { user, token, logout } = useAuth();
+  const { user, userRole, token, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -244,7 +244,7 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
               <p className="text-body-bold text-sm font-semibold ">
                 {user?.profile?.name}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-500 capitalize">{userRole}</p>
             </div>
             <img
               src={

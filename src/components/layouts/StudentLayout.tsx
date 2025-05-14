@@ -72,7 +72,7 @@ interface StudentLayoutProps {
 }
 
 const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
-  const { user, token, logout } = useAuth();
+  const { user, userRole, token, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -104,7 +104,7 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
     navigate("/login");
   };
 
-  if (!user || !token) {
+  if (!user || !token || !userRole) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="animate-pulse text-gray-500">Loading...</div>
@@ -244,7 +244,7 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
               <p className="text-body-bold text-sm font-semibold truncate max-w-[150px]">
                 {user?.profile?.name}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-500 capitalize">{userRole}</p>
             </div>
             <img
               src={

@@ -8,6 +8,7 @@ import {
   LogOutIcon,
   BookOpenText,
   BookText,
+  Logs,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router";
@@ -72,7 +73,7 @@ interface CoordinatorLayoutProps {
 }
 
 const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
-  const { user, token, logout } = useAuth();
+  const { user, userRole, token, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -104,7 +105,7 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
     navigate("/login");
   };
 
-  if (!user || !token) {
+  if (!user || !token || !userRole) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="animate-pulse text-gray-500">Loading...</div>
@@ -127,6 +128,11 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
       icon: BookText,
       path: "/seminar-hasil",
       label: "Seminar Hasil",
+    },
+    {
+      icon: Logs,
+      path: "/log-keamanan",
+      label: "Log Leamanan",
     },
   ];
 
@@ -244,7 +250,7 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
               <p className="text-body-bold text-sm font-semibold truncate max-w-[150px]">
                 {user?.profile?.name}
               </p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-xs text-gray-500 capitalize">{userRole}</p>
             </div>
             <img
               src={

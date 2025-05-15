@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router";
 import LecturerSeminarHasil from "../lecturer/SeminarHasil";
+import CoordinatorSeminarHasil from "../coordinator/SeminarHasil";
 // import StudentSeminarHasil from "../student/seminar-proposal/SeminarHasil";
 // import CoordinatorSeminarHasil from "../coordinator/seminar-proposal/SeminarHasil";
 
@@ -43,8 +44,8 @@ const SeminarHasil: React.FC = () => {
   switch (userData.role) {
     // case UserRole.STUDENT:
     // return <StudentSeminarHasil />;
-    // case UserRole.COORDINATOR:
-    //   return <CoordinatorSeminarHasil />;
+    case UserRole.COORDINATOR:
+      return <CoordinatorSeminarHasil />;
     case UserRole.LECTURER:
       return <LecturerSeminarHasil />;
     default:

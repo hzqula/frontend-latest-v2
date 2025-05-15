@@ -24,6 +24,7 @@ import {
   Info,
   Download,
   Clock,
+  MapPin,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import { Badge } from "../../components/ui/badge";
@@ -532,7 +533,7 @@ const StudentSeminarProposal = () => {
             </p>
           </div>
         </Card>
-        <Card className="col-span-1 border border-env-darker row-span-1 gap-0 px-8 py-4 bg-env-lighter overflow-hidden relative">
+        <Card className="col-span-1 row-span-1 gap-0 px-8 py-4 bg-env-darker overflow-hidden relative">
           <div className="w-full flex justify-between items-center">
             <h1 className="text-base md:text-lg font-heading font-bold text-env-light">
               Jadwal Seminar
@@ -541,11 +542,29 @@ const StudentSeminarProposal = () => {
               <Clock className="text-jewel-red  w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
-          <p className="-mt-2 text-env-darker font-bold md:text-2xl text-xl">
-            {seminar.time
-              ? `Jam  ${formatTime(seminar.time)} | ${formatDate(seminar.time)}`
-              : "Belum ditentukan"}
-          </p>
+          {seminar ? (
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar size={12} className="text-primary-foreground" />
+                <div>
+                  <span className="text-sm text-primary-foreground">
+                    {formatDate(seminar.time!)}
+                  </span>
+                  <span className="text-sm text-muted ml-2">
+                    Jam {formatTime(seminar.time!)} WIB
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={12} className="text-primary-foreground" />
+                <span className="text-sm text-primary-foreground">
+                  {seminar.room || "TBD"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-primary">Belum ditentukan.</p>
+          )}
         </Card>
         <Card className="col-span-1 row-span-1 gap-0 px-8 py-4 bg-background overflow-hidden relative">
           <div className="w-12 h-12 rounded-full bg-env-base absolute -left-2 -bottom-4"></div>

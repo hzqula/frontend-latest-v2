@@ -41,7 +41,7 @@ export const privateRoutes: RouteObject[] = [
     element: <SeminarHasil />,
   },
   {
-    path: "/log",
+    path: "/log-keamanan",
     element: <SecurityLog />,
   },
   {

@@ -85,3 +85,25 @@ export interface SecurityLogs {
   device: string;
   createdAt: string;
 }
+// Tipe generik untuk data dalam payload tooltip
+export interface TooltipPayloadData<T = any> {
+  [key: string]: T;
+}
+
+// Tipe untuk payload dalam CustomTooltip (berdasarkan Recharts TooltipPayload)
+export interface TooltipPayload<T = any> {
+  payload: TooltipPayloadData<T>;
+  name: string;
+  value: T;
+  color?: string; // Properti opsional untuk warna dari Recharts
+  unit?: string; // Opsional, untuk satuan (jika ada)
+  dataKey?: string; // Opsional, untuk kunci data
+  [key: string]: any; // Fleksibel untuk properti tambahan dari Recharts
+}
+
+// Tipe untuk props CustomTooltip dengan pendekatan generik
+export interface CustomTooltipProps<T = any> {
+  active?: boolean;
+  payload?: TooltipPayload<T>[];
+  label?: string;
+}

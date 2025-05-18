@@ -189,7 +189,7 @@ const TableSeminarsSubmitted = ({
                   colSpan={5}
                   className="p-4 text-center text-primary-600"
                 >
-                  Belum ada pengajuan seminar proposal.
+                  Belum ada pengajuan seminar
                 </TableCell>
               </TableRow>
             )}

@@ -1,0 +1,197 @@
+"use client";
+
+import React from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { CustomTooltipProps, Seminar } from "@/configs/types";
+import {
+  TrendingUp,
+  Folder,
+  File,
+  TrendingDown,
+  EqualApproximately,
+} from "lucide-react";
+
+interface LineChartSeminarsProps {
+  seminars: Seminar[];
+}
+
+const LineChartSeminars: React.FC<LineChartSeminarsProps> = ({ seminars }) => {
+  const processSeminarData = (seminars: Seminar[]) => {
+    const currentDate = new Date("2025-05-16T20:36:00Z");
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentDate);
+      date.setMonth(currentDate.getMonth() - i);
+      const month = date.toLocaleString("en-US", { month: "short" });
+      const year = date.getFullYear();
+      months.push({ month, year });
+    }
+
+    const data = months.map(({ month, year }) => {
+      const monthIndex = new Date(`${year}-${month}`).getMonth() + 1;
+      const proposalCount = seminars.filter(
+        (seminar) =>
+          seminar.type === "PROPOSAL" &&
+          new Date(seminar.createdAt).getMonth() + 1 === monthIndex &&
+          new Date(seminar.createdAt).getFullYear() === year
+      ).length;
+      const resultCount = seminars.filter(
+        (seminar) =>
+          seminar.type === "HASIL" &&
+          new Date(seminar.createdAt).getMonth() + 1 === monthIndex &&
+          new Date(seminar.createdAt).getFullYear() === year
+      ).length;
+      return { month, proposal: proposalCount, hasil: resultCount };
+    });
+
+    return data;
+  };
+
+  // Fungsi untuk menghitung persentase perubahan
+  const calculatePercentageChange = (current: number, previous: number) => {
+    if (previous === 0) {
+      if (current === 0) return 0; // Tidak ada perubahan jika keduanya 0
+      return current > 0 ? 100 : -100; // Jika sebelumnya 0, anggap perubahan 100% (naik/turun)
+    }
+    return ((current - previous) / previous) * 100;
+  };
+
+  const data = processSeminarData(seminars);
+
+  // Ambil data untuk bulan sebelumnya dan bulan ini
+  const lastMonthData = data[data.length - 2] || { proposal: 0, hasil: 0 }; // April
+  const currentMonthData = data[data.length - 1] || { proposal: 0, hasil: 0 }; // Mei
+
+  const proposalChange = calculatePercentageChange(
+    currentMonthData.proposal,
+    lastMonthData.proposal
+  );
+  const resultChange = calculatePercentageChange(
+    currentMonthData.hasil,
+    lastMonthData.hasil
+  );
+
+  const ChangeIndicator = ({
+    change,
+    type,
+  }: {
+    change: number;
+    type: string;
+  }) => {
+    const isIncrease = change > 0;
+    const absChange = Math.abs(change).toFixed(1);
+
+    return (
+      <div className="flex items-center gap-1 text-sm">
+        <span
+          className={`
+            ${
+              change !== 0
+                ? isIncrease
+                  ? "text-jewel-blue"
+                  : "text-jewel-red"
+                : "text-muted-foreground"
+            } flex items-center justify-center
+            `}
+        >
+          {type === "Seminar Proposal" ? (
+            <div className="flex items-center justify-center w-6 h-6 bg-pastel-blue rounded-full  mr-1">
+              <File className="w-4 h-4 text-jewel-blue" />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-6 h-6 bg-pastel-green rounded-full  mr-1">
+              <Folder className="w-4 h-4 text-jewel-green" />
+            </div>
+          )}
+          {absChange}%
+        </span>
+        {change !== 0 ? (
+          isIncrease ? (
+            <TrendingUp className="w-4 h-4 text-jewel-blue" />
+          ) : (
+            <TrendingDown className="w-4 h-4 text-jewel-red" />
+          )
+        ) : (
+          <EqualApproximately className="w-4 h-4 text-muted-foreground" />
+        )}
+      </div>
+    );
+  };
+
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="shadow-sm border px-4 py-2 rounded-sm bg-background">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          {payload.map((entry, index) => (
+            <p
+              key={index}
+              className="text-sm font-medium"
+              style={{ color: entry.color }}
+            >
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart
+          data={data}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 0,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Line
+            type="monotone"
+            dataKey="proposal"
+            name="Seminar Proposal"
+            stroke="#064359"
+            strokeWidth={1.5}
+            activeDot={{ r: 8 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="hasil"
+            name="Seminar Hasil"
+            stroke="#055a39"
+            strokeWidth={1.5}
+            activeDot={{ r: 8 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      <div className="flex gap-4 text-sm pb-4 justify-end">
+        {data.length > 1 && (
+          <>
+            <ChangeIndicator change={proposalChange} type="Seminar Proposal" />
+            <ChangeIndicator change={resultChange} type="Seminar Hasil" />
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default LineChartSeminars;

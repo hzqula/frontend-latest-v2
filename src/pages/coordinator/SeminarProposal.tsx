@@ -165,8 +165,7 @@ const CoordinatorSeminarProposal = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Card 1: Seminar Terlama yang Belum Dijadwalkan */}
+      <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="col-span-1 sm:col-span-2 py-4 gap-2 px-8 row-span-1 relative overflow-hidden border-env-darker border rounded-md bg-env-darker order-1">
           <div className="w-full flex justify-between items-center">
             <h1 className="text-base md:text-lg font-heading font-bold text-env-lighter">

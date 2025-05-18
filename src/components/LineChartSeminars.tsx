@@ -100,28 +100,28 @@ const LineChartSeminars: React.FC<LineChartSeminarsProps> = ({ seminars }) => {
                   ? "text-jewel-blue"
                   : "text-jewel-red"
                 : "text-muted-foreground"
-            } flex items-center justify-center
+            } flex items-center justify-center text-xs md:text-sm
             `}
         >
           {type === "Seminar Proposal" ? (
-            <div className="flex items-center justify-center w-6 h-6 bg-pastel-blue rounded-full  mr-1">
-              <File className="w-4 h-4 text-jewel-blue" />
+            <div className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-pastel-blue rounded-full  mr-1">
+              <File className="w-3 md:w-4 h-3 md:h-4 text-jewel-blue" />
             </div>
           ) : (
-            <div className="flex items-center justify-center w-6 h-6 bg-pastel-green rounded-full  mr-1">
-              <Folder className="w-4 h-4 text-jewel-green" />
+            <div className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-pastel-green rounded-full  mr-1">
+              <Folder className="w-3 md:w-4 h-3 md:h-4 text-jewel-green" />
             </div>
           )}
           {absChange}%
         </span>
         {change !== 0 ? (
           isIncrease ? (
-            <TrendingUp className="w-4 h-4 text-jewel-blue" />
+            <TrendingUp className="w-3 md:w-4 h-3 md:h-4 text-jewel-blue" />
           ) : (
-            <TrendingDown className="w-4 h-4 text-jewel-red" />
+            <TrendingDown className="w-3 md:w-4 h-3 md:h-4 text-jewel-red" />
           )
         ) : (
-          <EqualApproximately className="w-4 h-4 text-muted-foreground" />
+          <EqualApproximately className="w-3 md:w-4 h-3 md:h-4 text-muted-foreground" />
         )}
       </div>
     );
@@ -155,7 +155,7 @@ const LineChartSeminars: React.FC<LineChartSeminarsProps> = ({ seminars }) => {
           margin={{
             top: 5,
             right: 30,
-            left: 0,
+            left: -30,
             bottom: 5,
           }}
         >

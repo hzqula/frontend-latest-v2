@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { Stepper } from "@/components/Stepper";
 
-// Skema validasi Zod dari komponen pertama
+// Skema validasi Zod
 const emailSchema = z.object({
   email: z
     .string()
@@ -96,7 +96,7 @@ const Register: React.FC = () => {
   const [resendDisabled, setResendDisabled] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  // Form data dari komponen pertama
+  // Form data
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
@@ -118,7 +118,10 @@ const Register: React.FC = () => {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
-    if (value.includes("@lecturer.unri.ac.id")) {
+    if (
+      value.includes("@lecturer.unri.ac.id") ||
+      value.includes("@eng.unri.ac.id")
+    ) {
       setRole("LECTURER");
     } else if (value.includes("@student.unri.ac.id")) {
       setRole("STUDENT");
@@ -134,6 +137,25 @@ const Register: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validasi ukuran file (maks 2MB, sesuai backend)
+      if (file.size > 2 * 1024 * 1024) {
+        setFormErrors((prev) => ({
+          ...prev,
+          profilePicture: "Ukuran file maksimum adalah 2MB",
+        }));
+        return;
+      }
+      // Validasi tipe file
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        setFormErrors((prev) => ({
+          ...prev,
+          profilePicture:
+            "Hanya file gambar (JPEG, JPG, PNG) yang diperbolehkan",
+        }));
+        return;
+      }
+
       setProfilePicture(file);
       const reader = new FileReader();
       reader.onloadend = () =>
@@ -174,21 +196,26 @@ const Register: React.FC = () => {
       const response = await fetch("http://localhost:5500/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role }),
+        body: JSON.stringify({ email }),
       });
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error);
+        toast.error(data.message || "Gagal mengirim OTP");
+        setFormErrors((prev) => ({ ...prev, general: data.message }));
         return;
       }
 
-      toast.success(data.error);
+      toast.success(data.message || "OTP telah dikirim ke email Anda");
       setCurrentStep(2);
       startResendCountdown();
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);
       toast.error("Terjadi kesalahan ketika mengirim OTP");
+      setFormErrors((prev) => ({
+        ...prev,
+        general: "Terjadi kesalahan ketika mengirim OTP",
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -218,16 +245,21 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error);
+        toast.error(data.message || "Gagal memverifikasi OTP");
+        setFormErrors((prev) => ({ ...prev, general: data.message }));
         setCurrentStep(1);
         return;
       }
 
-      toast.success("OTP berhasil diverifikasi!");
+      toast.success(data.message || "OTP berhasil diverifikasi!");
       setCurrentStep(3);
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);
       toast.error("Terjadi kesalahan ketika memverifikasi OTP");
+      setFormErrors((prev) => ({
+        ...prev,
+        general: "Terjadi kesalahan ketika memverifikasi OTP",
+      }));
       setCurrentStep(1);
     } finally {
       setIsLoading(false);
@@ -261,6 +293,7 @@ const Register: React.FC = () => {
 
       if (!otp) {
         toast.warning("Masukkan kode OTP.");
+        setFormErrors((prev) => ({ ...prev, general: "Masukkan kode OTP." }));
         return;
       }
 
@@ -270,7 +303,6 @@ const Register: React.FC = () => {
       formData.append("nipOrNim", nipOrNim);
       formData.append("name", name);
       formData.append("phoneNumber", phoneNumber);
-      formData.append("role", role || "");
       if (profilePicture) formData.append("profilePicture", profilePicture);
 
       const response = await fetch(
@@ -283,16 +315,21 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error);
+        toast.error(data.message || "Gagal mendaftar");
+        setFormErrors((prev) => ({ ...prev, general: data.message }));
         return;
       }
 
       localStorage.setItem("token", data.token);
-      toast.success("Pendaftaran berhasil!");
+      toast.success(data.message || "Pendaftaran berhasil!");
       navigate("/login", { state: { registrationSuccess: true } });
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);
       toast.error("Terjadi kesalahan ketika mendaftar");
+      setFormErrors((prev) => ({
+        ...prev,
+        general: "Terjadi kesalahan ketika mendaftar",
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -327,6 +364,11 @@ const Register: React.FC = () => {
                   @student.unri.ac.id)
                 </p>
               </div>
+              {formErrors.general && (
+                <Alert variant="destructive">
+                  <AlertDescription>{formErrors.general}</AlertDescription>
+                </Alert>
+              )}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Mengirim OTP..." : "Lanjut"}
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -378,6 +420,11 @@ const Register: React.FC = () => {
                     : "Tidak menerima kode? Kirim ulang"}
                 </Button>
               </div>
+              {formErrors.general && (
+                <Alert variant="destructive">
+                  <AlertDescription>{formErrors.general}</AlertDescription>
+                </Alert>
+              )}
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -594,7 +641,7 @@ const Register: React.FC = () => {
                       />
                     </Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      JPG, PNG atau GIF, maks 2MB
+                      JPG, PNG, maks 2MB
                     </p>
                   </div>
                 </div>

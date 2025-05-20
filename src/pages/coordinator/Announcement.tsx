@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,6 +11,8 @@ import axios from "axios";
 import { Loader2, Plus } from "lucide-react";
 import ModalCreateAnnouncement from "@/components/ModalCreateAnnouncement";
 import ModalManageAnnouncement from "@/components/ModalManageAnnouncement";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "react-toastify";
 
 interface Announcement {
   id: number;
@@ -21,7 +23,8 @@ interface Announcement {
   createdAt: string;
 }
 
-export default function Announcement() {
+const Announcement = () => {
+  const { token, logout } = useAuth(); // Gunakan AuthContext untuk token
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] =
@@ -29,44 +32,64 @@ export default function Announcement() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get("/api/announcements", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        if (response.data.success) {
-          setAnnouncements(response.data.announcements);
-        } else {
-          setError(response.data.message);
+  // Fungsi untuk mengambil pengumuman dari server
+  const fetchAnnouncements = useCallback(async () => {
+    if (!token) {
+      setError("Token tidak ditemukan. Silakan login kembali.");
+      logout();
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        "http://localhost:5500/api/announcements",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      } catch (err) {
-        setError("Terjadi kesalahan saat mengambil data pengumuman");
-      } finally {
-        setIsLoading(false);
+      );
+
+      if (response.data.success) {
+        setAnnouncements(response.data.announcements);
+        setError(null);
+      } else {
+        setError(response.data.message || "Gagal mengambil pengumuman");
       }
-    };
+    } catch (err: any) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError("Sesi tidak valid. Silakan login kembali.");
+        logout();
+      } else {
+        setError("Terjadi kesalahan saat mengambil data pengumuman");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token, logout]);
 
+  // Panggil fetchAnnouncements saat komponen dimuat
+  useEffect(() => {
     fetchAnnouncements();
-  }, []);
+  }, [fetchAnnouncements]);
 
+  // Handler untuk pengumuman baru
   const handleAnnouncementCreated = (newAnnouncement: Announcement) => {
-    setAnnouncements([newAnnouncement, ...announcements]);
+    setIsCreateModalOpen(false);
+    fetchAnnouncements(); // Ambil ulang data dari server
+    toast.success("Pengumuman berhasil dibuat!");
   };
 
+  // Handler untuk pengumuman yang diperbarui
   const handleAnnouncementUpdated = (updatedAnnouncement: Announcement) => {
-    setAnnouncements(
-      announcements.map((ann) =>
-        ann.id === updatedAnnouncement.id ? updatedAnnouncement : ann
-      )
-    );
     setSelectedAnnouncement(null);
+    fetchAnnouncements(); // Ambil ulang data dari server
+    toast.success("Pengumuman berhasil diperbarui!");
   };
 
+  // Handler untuk pengumuman yang dihapus
   const handleAnnouncementDeleted = (id: number) => {
-    setAnnouncements(announcements.filter((ann) => ann.id !== id));
     setSelectedAnnouncement(null);
+    fetchAnnouncements(); // Ambil ulang data dari server
   };
 
   return (
@@ -84,9 +107,13 @@ export default function Announcement() {
         </div>
       )}
 
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && (
+        <div className="text-red-500 mb-4 rounded-md bg-red-50 p-4">
+          {error}
+        </div>
+      )}
 
-      {!isLoading && announcements.length === 0 && (
+      {!isLoading && announcements.length === 0 && !error && (
         <p className="text-center text-gray-500">Belum ada pengumuman.</p>
       )}
 
@@ -141,4 +168,6 @@ export default function Announcement() {
       )}
     </div>
   );
-}
+};
+
+export default Announcement;

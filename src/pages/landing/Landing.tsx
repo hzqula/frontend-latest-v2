@@ -1,109 +1,81 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Seminar } from "@/configs/types";
-import { useApiData } from "@/hooks/useApiData";
-import { Calendar, Info, MapPin, User } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
-const Landing = () => {
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [selectedSeminar, setSelectedSeminar] = useState<any>(null);
-
-  const seminarQuery = useApiData({ type: "seminars" });
-  const seminars = seminarQuery.data || [];
-  const isLoading = seminarQuery.isLoading;
-  const isError = seminarQuery.isError;
-  const refetch = seminarQuery.refetch;
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (isError) {
-    return <div>Error...</div>;
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+interface Announcement {
+  id: number;
+  title: string;
+  content: string;
+  image?: string;
+  visibility: string[]; // Ubah ke array untuk sesuai dengan backend
+  createdAt: string;
+  coordinator: {
+    name: string;
+    profilePicture?: string;
   };
+}
 
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+const LandingPage: React.FC = () => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const openDetailsModal = (seminar: Seminar) => {
-    setSelectedSeminar(seminar);
-    setDetailsModalOpen(true);
-  };
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          "http://localhost:5500/api/announcements/public"
+        );
+        const data = await response.json();
 
-  console.log("Seminar: ", seminars);
+        if (!response.ok) {
+          toast.error(data.error || "Gagal mengambil pengumuman");
+          setIsLoading(false);
+          return;
+        }
+
+        setAnnouncements(data.announcements);
+      } catch (error) {
+        console.error("Error fetching announcements:", error);
+        toast.error("Terjadi kesalahan ketika mengambil pengumuman");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
 
   return (
-    <div>
-      {seminars.map((seminar: Seminar, index: number) => (
-        <Card
-          key={index}
-          className="overflow-hidden gap-2 border-l-4 hover:shadow-md transition-all duration-200"
-        >
-          <CardHeader className="pb-0">Test</CardHeader>
-          <CardContent className="pb-2">
-            <div className="text-sm">
-              <div className="flex items-center gap-2">
-                <User size={12} className="text-primary-600" />
-                <div>
-                  <span className="text-xs">
-                    {seminar.student?.name || "N/A"}
-                  </span>
-                  <span className="text-muted-foreground text-xs ml-2">
-                    ({seminar.student?.nim || "N/A"})
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar size={12} className="text-primary-600" />
-                <div>
-                  <span className="text-xs">{formatDate(seminar.time)}</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    Jam {formatTime(seminar.time)} WIB
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={12} className="text-primary-600" />
-                <span className="text-xs">{seminar.room || "TBD"}</span>
-              </div>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Selamat Datang!</h1>
+      <h2 className="text-xl font-semibold mb-2">Pengumuman Publik</h2>
+      {isLoading ? (
+        <p>Memuat pengumuman...</p>
+      ) : announcements.length === 0 ? (
+        <p>Tidak ada pengumuman publik saat ini.</p>
+      ) : (
+        <div className="grid gap-4">
+          {announcements.map((announcement) => (
+            <div key={announcement.id} className="border rounded-lg p-4">
+              <h3 className="text-lg font-semibold">{announcement.title}</h3>
+              <p className="text-gray-600">{announcement.content}</p>
+              {announcement.image && (
+                <img
+                  src={announcement.image}
+                  alt="Pengumuman"
+                  className="mt-2 rounded max-w-full h-auto"
+                />
+              )}
+              <p className="text-sm text-gray-500 mt-2">
+                Dibuat oleh: {announcement.coordinator.name} pada{" "}
+                {new Date(announcement.createdAt).toLocaleDateString()}
+              </p>
             </div>
-          </CardContent>
-          <CardFooter className="pt-0 flex justify-between gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => openDetailsModal(seminar)}
-            >
-              <Info size={12} className="mr-1" />
-              Lihat
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Landing;
+export default LandingPage;

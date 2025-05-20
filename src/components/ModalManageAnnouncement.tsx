@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -22,6 +23,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "react-toastify";
 
 const formSchema = z.object({
   title: z.string().min(1, "Judul tidak boleh kosong"),
@@ -45,12 +48,13 @@ interface ModalManageAnnouncementProps {
   onAnnouncementDeleted: (id: number) => void;
 }
 
-export default function ModalManageAnnouncement({
+const ModalManageAnnouncement = ({
   announcement,
   onClose,
   onAnnouncementUpdated,
   onAnnouncementDeleted,
-}: ModalManageAnnouncementProps) {
+}: ModalManageAnnouncementProps) => {
+  const { token, logout } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +91,12 @@ export default function ModalManageAnnouncement({
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!token) {
+      setError("Sesi tidak valid. Silakan login kembali.");
+      logout();
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -104,7 +114,7 @@ export default function ModalManageAnnouncement({
         formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
@@ -112,43 +122,61 @@ export default function ModalManageAnnouncement({
 
       if (response.data.success) {
         onAnnouncementUpdated(response.data.announcement);
+        toast.success("Pengumuman berhasil diperbarui!");
         onClose();
       } else {
         setError(response.data.message);
+        toast.error(response.data.message || "Gagal memperbarui pengumuman");
       }
     } catch (err: any) {
-      setError(
+      const errorMessage =
         err.response?.data?.message ||
-          "Terjadi kesalahan saat memperbarui pengumuman"
-      );
+        "Terjadi kesalahan saat memperbarui pengumuman";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
+    if (!token) {
+      setError("Sesi tidak valid. Silakan login kembali.");
+      logout();
+      return;
+    }
+
     setIsDeleting(true);
     setError(null);
 
     try {
       const response = await axios.delete(
-        `/api/announcements/${announcement.id}`,
+        `http://localhost:5500/api/announcements/${announcement.id}`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (response.data.success) {
         onAnnouncementDeleted(announcement.id);
+        toast.success("Pengumuman berhasil dihapus!");
         onClose();
       } else {
         setError(response.data.message);
+        toast.error(response.data.message || "Gagal menghapus pengumuman");
       }
     } catch (err: any) {
-      setError(
+      const errorMessage =
         err.response?.data?.message ||
-          "Terjadi kesalahan saat menghapus pengumuman"
-      );
+        "Terjadi kesalahan saat menghapus pengumuman";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -159,6 +187,9 @@ export default function ModalManageAnnouncement({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Kelola Pengumuman</DialogTitle>
+          <DialogDescription>
+            Edit atau hapus pengumuman yang sudah ada.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -262,7 +293,11 @@ export default function ModalManageAnnouncement({
                 </FormItem>
               )}
             />
-            {error && <div className="text-red-500">{error}</div>}
+            {error && (
+              <div className="text-red-500 rounded-md bg-red-50 p-2">
+                {error}
+              </div>
+            )}
             <DialogFooter>
               <Button
                 type="button"
@@ -292,4 +327,6 @@ export default function ModalManageAnnouncement({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ModalManageAnnouncement;

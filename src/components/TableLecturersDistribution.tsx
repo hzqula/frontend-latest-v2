@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { LecturerSeminarData } from "@/configs/types";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface TableLecturersDistributionProps {
   data: LecturerSeminarData[];
@@ -17,10 +18,8 @@ interface TableLecturersDistributionProps {
 const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
   data,
 }) => {
-  console.log(data);
-
   return (
-    <div className="hidden md:block rounded-sm overflow-x-auto border border-border">
+    <div className="hidden md:block overflow-x-auto border border-border">
       <Table className="bg-background">
         <TableHeader>
           <TableRow className="text-xs">
@@ -37,9 +36,30 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
               <TableRow key={index} className="border-b border-border">
                 <TableCell className="text-center">{index + 1}</TableCell>
                 <TableCell>
-                  <div>{lecturer.name || "N/A"}</div>
-                  <div className="text-muted-foreground">
-                    {lecturer.nip || "N/A"}
+                  <div className="flex  gap-2">
+                    <Avatar>
+                      <AvatarImage
+                        src={
+                          lecturer.profilePicture
+                            ? lecturer.profilePicture
+                            : `https://robohash.org/${lecturer.name}`
+                        }
+                        alt="advisor-image"
+                        className="border rounded-full h-8 w-8 md:h-12 md:w-12"
+                      />
+                      <AvatarFallback className="bg-primary-100 text-env-darker">
+                        {lecturer
+                          .name!.split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div>{lecturer.name || "N/A"}</div>
+                      <div className="text-muted-foreground">
+                        {lecturer.nip || "N/A"}
+                      </div>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="font-light">

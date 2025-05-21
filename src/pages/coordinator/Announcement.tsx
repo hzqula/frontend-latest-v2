@@ -1,38 +1,26 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import axios from "axios";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "react-toastify";
+import CoordinatorLayout from "@/components/layouts/CoordinatorLayout";
 import ModalCreateAnnouncement from "@/components/ModalCreateAnnouncement";
 import ModalManageAnnouncement from "@/components/ModalManageAnnouncement";
+import CardAnnouncement from "@/components/CardAnnouncement";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "react-toastify";
-
-interface Announcement {
-  id: number;
-  title: string;
-  content: string;
-  visibility: string[];
-  image?: string;
-  createdAt: string;
-}
+import { apiClient } from "@/configs/apiClient";
+import { AnnouncementProps } from "@/configs/types";
 
 const Announcement = () => {
-  const { token, logout } = useAuth(); // Gunakan AuthContext untuk token
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const { token, logout } = useAuth();
+  const [announcements, setAnnouncements] = useState<AnnouncementProps[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] =
-    useState<Announcement | null>(null);
+    useState<AnnouncementProps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fungsi untuk mengambil pengumuman dari server
   const fetchAnnouncements = useCallback(async () => {
     if (!token) {
       setError("Token tidak ditemukan. Silakan login kembali.");
@@ -42,12 +30,7 @@ const Announcement = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.get(
-        "http://localhost:5500/api/announcements",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await apiClient.get("/announcements");
 
       if (response.data.success) {
         setAnnouncements(response.data.announcements);
@@ -67,88 +50,68 @@ const Announcement = () => {
     }
   }, [token, logout]);
 
-  // Panggil fetchAnnouncements saat komponen dimuat
   useEffect(() => {
     fetchAnnouncements();
   }, [fetchAnnouncements]);
 
-  // Handler untuk pengumuman baru
-  const handleAnnouncementCreated = (newAnnouncement: Announcement) => {
+  const handleAnnouncementCreated = () => {
     setIsCreateModalOpen(false);
-    fetchAnnouncements(); // Ambil ulang data dari server
+    fetchAnnouncements();
     toast.success("Pengumuman berhasil dibuat!");
   };
 
-  // Handler untuk pengumuman yang diperbarui
-  const handleAnnouncementUpdated = (updatedAnnouncement: Announcement) => {
+  const handleAnnouncementUpdated = () => {
     setSelectedAnnouncement(null);
-    fetchAnnouncements(); // Ambil ulang data dari server
-    toast.success("Pengumuman berhasil diperbarui!");
+    fetchAnnouncements();
   };
 
-  // Handler untuk pengumuman yang dihapus
-  const handleAnnouncementDeleted = (id: number) => {
+  const handleAnnouncementDeleted = () => {
     setSelectedAnnouncement(null);
-    fetchAnnouncements(); // Ambil ulang data dari server
+    fetchAnnouncements();
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Daftar Pengumuman</h1>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Buat Pengumuman
-        </Button>
+    <CoordinatorLayout>
+      <div className="flex flex-col mb-4">
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
+          Pengumuman
+        </h1>
+        <p className="text-primary md:text-base text-sm">
+          Di sini tempat Anda menambah, memperbarui, dan menghapus pengumuman
+        </p>
       </div>
+      <Button
+        className="bg-env-base text-primary-foreground text-xs sm:text-sm"
+        onClick={() => setIsCreateModalOpen(true)}
+      >
+        <Plus className="mr-2 h-4 w-4" /> Buat Pengumuman
+      </Button>
 
       {isLoading && (
         <div className="flex justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-jewel-blue" />
         </div>
       )}
 
       {error && (
-        <div className="text-red-500 mb-4 rounded-md bg-red-50 p-4">
+        <div className="text-red-500 mb-4 rounded-md bg-pastel-red/20 p-4 text-xs sm:text-sm">
           {error}
         </div>
       )}
 
       {!isLoading && announcements.length === 0 && !error && (
-        <p className="text-center text-gray-500">Belum ada pengumuman.</p>
+        <p className="text-center text-muted-foreground text-xs sm:text-sm">
+          Belum ada pengumuman.
+        </p>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {announcements.map((announcement) => (
-          <Card key={announcement.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle>{announcement.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1">
-              {announcement.image && (
-                <img
-                  src={announcement.image}
-                  alt={announcement.title}
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                />
-              )}
-              <p className="text-gray-600">{announcement.content}</p>
-              <p className="text-sm text-gray-500 mt-2">
-                Visibilitas: {announcement.visibility.join(", ")}
-              </p>
-              <p className="text-sm text-gray-500">
-                Dibuat:{" "}
-                {new Date(announcement.createdAt).toLocaleDateString("id-ID")}
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="outline"
-                onClick={() => setSelectedAnnouncement(announcement)}
-              >
-                Kelola
-              </Button>
-            </CardFooter>
-          </Card>
+          <CardAnnouncement
+            key={announcement.id}
+            announcement={announcement}
+            onManage={setSelectedAnnouncement}
+          />
         ))}
       </div>
 
@@ -166,7 +129,7 @@ const Announcement = () => {
           onAnnouncementDeleted={handleAnnouncementDeleted}
         />
       )}
-    </div>
+    </CoordinatorLayout>
   );
 };
 

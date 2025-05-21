@@ -157,7 +157,7 @@ const ModalCreateAnnouncement = ({
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="mt-2 w-full max-h-48 object-contain rounded-md"
+                      className="mt-2 w-full max-h-48 object-cover rounded-md"
                     />
                   )}
                   <FormMessage />

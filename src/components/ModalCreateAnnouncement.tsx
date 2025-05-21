@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +18,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "react-toastify";
+import { AnnouncementProps } from "@/configs/types";
+import axios from "axios";
 
 const formSchema = z.object({
   title: z.string().min(1, "Judul tidak boleh kosong"),
@@ -35,14 +40,21 @@ const formSchema = z.object({
 interface ModalCreateAnnouncementProps {
   isOpen: boolean;
   onClose: () => void;
-  onAnnouncementCreated: (announcement: any) => void;
+  onAnnouncementCreated: (announcement: AnnouncementProps) => void;
 }
 
-export default function ModalCreateAnnouncement({
+const visibilityOptions: ("STUDENT" | "LECTURER" | "PUBLIC")[] = [
+  "STUDENT",
+  "LECTURER",
+  "PUBLIC",
+];
+
+const ModalCreateAnnouncement = ({
   isOpen,
   onClose,
   onAnnouncementCreated,
-}: ModalCreateAnnouncementProps) {
+}: ModalCreateAnnouncementProps) => {
+  const { token, logout } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -66,6 +78,12 @@ export default function ModalCreateAnnouncement({
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!token) {
+      setError("Sesi tidak valid. Silakan login kembali.");
+      logout();
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -83,7 +101,7 @@ export default function ModalCreateAnnouncement({
         formData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
@@ -91,17 +109,23 @@ export default function ModalCreateAnnouncement({
 
       if (response.data.success) {
         onAnnouncementCreated(response.data.announcement);
+        toast.success("Pengumuman berhasil dibuat!");
         onClose();
         form.reset();
         setImagePreview(null);
       } else {
         setError(response.data.message);
+        toast.error(response.data.message || "Gagal membuat pengumuman");
       }
     } catch (err: any) {
-      setError(
+      const errorMessage =
         err.response?.data?.message ||
-          "Terjadi kesalahan saat membuat pengumuman"
-      );
+        "Terjadi kesalahan saat membuat pengumuman";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        logout();
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -117,12 +141,41 @@ export default function ModalCreateAnnouncement({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="image"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Gambar (Opsional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      onChange={handleImageChange}
+                      className="text-xs sm:text-sm"
+                    />
+                  </FormControl>
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="mt-2 w-full max-h-48 object-contain rounded-md"
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Judul</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan judul pengumuman" {...field} />
+                    <Input
+                      placeholder="Masukkan judul pengumuman"
+                      {...field}
+                      className="text-xs sm:text-sm"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,9 +188,11 @@ export default function ModalCreateAnnouncement({
                 <FormItem>
                   <FormLabel>Caption</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       placeholder="Masukkan caption pengumuman"
                       {...field}
+                      className="text-xs sm:text-sm"
+                      rows={4}
                     />
                   </FormControl>
                   <FormMessage />
@@ -150,77 +205,63 @@ export default function ModalCreateAnnouncement({
               render={() => (
                 <FormItem>
                   <FormLabel>Visibilitas</FormLabel>
-                  <div className="space-y-2">
-                    {["STUDENT", "LECTURER", "PUBLIC"].map((vis) => (
-                      <FormItem
-                        key={vis}
-                        className="flex items-center space-x-2"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={form
-                              .watch("visibility")
-                              .includes(vis as any)}
-                            onCheckedChange={(checked) => {
-                              const current = form.getValues("visibility");
-                              if (checked) {
-                                form.setValue("visibility", [
-                                  ...current,
-                                  vis as any,
-                                ]);
-                              } else {
-                                form.setValue(
-                                  "visibility",
-                                  current.filter((v) => v !== vis)
-                                );
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
+                  <div className="flex gap-2">
+                    {visibilityOptions.map((vis) => {
+                      const isSelected = form.watch("visibility").includes(vis);
+                      return (
+                        <Button
+                          key={vis}
+                          type="button"
+                          variant="outline"
+                          className={`flex-1 text-xs sm:text-sm border-primary-400 ${
+                            isSelected
+                              ? "border-2 bg-pastel-blue text-jewel-blue"
+                              : "border bg-background text-primary-800"
+                          }`}
+                          onClick={() => {
+                            const current = form.getValues("visibility");
+                            if (isSelected) {
+                              form.setValue(
+                                "visibility",
+                                current.filter((v) => v !== vis)
+                              );
+                            } else {
+                              form.setValue("visibility", [...current, vis]);
+                            }
+                          }}
+                        >
                           {vis === "STUDENT"
                             ? "Mahasiswa"
                             : vis === "LECTURER"
                             ? "Dosen"
                             : "Publik"}
-                        </FormLabel>
-                      </FormItem>
-                    ))}
+                        </Button>
+                      );
+                    })}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="image"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Gambar (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/jpeg,image/png"
-                      onChange={handleImageChange}
-                    />
-                  </FormControl>
-                  {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="mt-2 w-full h-48 object-cover rounded-md"
-                    />
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {error && <div className="text-red-500">{error}</div>}
+            {error && (
+              <div className="text-red-500 rounded-md bg-pastel-red/20 p-2 text-xs sm:text-sm">
+                {error}
+              </div>
+            )}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="text-xs sm:text-sm"
+              >
                 Batal
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="text-xs sm:text-sm"
+              >
                 {isSubmitting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : null}
@@ -232,4 +273,6 @@ export default function ModalCreateAnnouncement({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default ModalCreateAnnouncement;

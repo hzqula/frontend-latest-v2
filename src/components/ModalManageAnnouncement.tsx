@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +27,7 @@ import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "react-toastify";
+import { AnnouncementProps } from "@/configs/types";
 
 const formSchema = z.object({
   title: z.string().min(1, "Judul tidak boleh kosong"),
@@ -36,17 +39,17 @@ const formSchema = z.object({
 });
 
 interface ModalManageAnnouncementProps {
-  announcement: {
-    id: number;
-    title: string;
-    content: string;
-    visibility: string[];
-    image?: string;
-  };
+  announcement: AnnouncementProps;
   onClose: () => void;
-  onAnnouncementUpdated: (announcement: any) => void;
+  onAnnouncementUpdated: (announcement: AnnouncementProps) => void;
   onAnnouncementDeleted: (id: number) => void;
 }
+
+const visibilityOptions: ("STUDENT" | "LECTURER" | "PUBLIC")[] = [
+  "STUDENT",
+  "LECTURER",
+  "PUBLIC",
+];
 
 const ModalManageAnnouncement = ({
   announcement,
@@ -195,12 +198,45 @@ const ModalManageAnnouncement = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="image"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Gambar (Opsional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      onChange={handleImageChange}
+                      className="text-xs sm:text-sm"
+                    />
+                  </FormControl>
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="mt-2 w-full max-h-48 object-contain rounded-md"
+                    />
+                  ) : (
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Tidak ada gambar.
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Judul</FormLabel>
                   <FormControl>
-                    <Input placeholder="Masukkan judul pengumuman" {...field} />
+                    <Input
+                      placeholder="Masukkan judul pengumuman"
+                      {...field}
+                      className="text-xs sm:text-sm"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,9 +249,11 @@ const ModalManageAnnouncement = ({
                 <FormItem>
                   <FormLabel>Caption</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       placeholder="Masukkan caption pengumuman"
                       {...field}
+                      className="text-xs sm:text-sm"
+                      rows={4}
                     />
                   </FormControl>
                   <FormMessage />
@@ -228,73 +266,46 @@ const ModalManageAnnouncement = ({
               render={() => (
                 <FormItem>
                   <FormLabel>Visibilitas</FormLabel>
-                  <div className="space-y-2">
-                    {["STUDENT", "LECTURER", "PUBLIC"].map((vis) => (
-                      <FormItem
-                        key={vis}
-                        className="flex items-center space-x-2"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={form
-                              .watch("visibility")
-                              .includes(vis as any)}
-                            onCheckedChange={(checked) => {
-                              const current = form.getValues("visibility");
-                              if (checked) {
-                                form.setValue("visibility", [
-                                  ...current,
-                                  vis as any,
-                                ]);
-                              } else {
-                                form.setValue(
-                                  "visibility",
-                                  current.filter((v) => v !== vis)
-                                );
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
+                  <div className="flex gap-2">
+                    {visibilityOptions.map((vis) => {
+                      const isSelected = form.watch("visibility").includes(vis);
+                      return (
+                        <Button
+                          key={vis}
+                          type="button"
+                          variant="outline"
+                          className={`flex-1 text-xs sm:text-sm border-primary-400 ${
+                            isSelected
+                              ? "border-2 bg-pastel-blue text-jewel-blue"
+                              : "border bg-background text-primary-800"
+                          }`}
+                          onClick={() => {
+                            const current = form.getValues("visibility");
+                            if (isSelected) {
+                              form.setValue(
+                                "visibility",
+                                current.filter((v) => v !== vis)
+                              );
+                            } else {
+                              form.setValue("visibility", [...current, vis]);
+                            }
+                          }}
+                        >
                           {vis === "STUDENT"
                             ? "Mahasiswa"
                             : vis === "LECTURER"
                             ? "Dosen"
                             : "Publik"}
-                        </FormLabel>
-                      </FormItem>
-                    ))}
+                        </Button>
+                      );
+                    })}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="image"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Gambar (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/jpeg,image/png"
-                      onChange={handleImageChange}
-                    />
-                  </FormControl>
-                  {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="mt-2 w-full h-48 object-cover rounded-md"
-                    />
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             {error && (
-              <div className="text-red-500 rounded-md bg-red-50 p-2">
+              <div className="text-red-500 rounded-md bg-pastel-red/20 p-2 text-xs sm:text-sm">
                 {error}
               </div>
             )}
@@ -304,6 +315,7 @@ const ModalManageAnnouncement = ({
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={isDeleting}
+                className="text-xs sm:text-sm"
               >
                 {isDeleting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -311,10 +323,19 @@ const ModalManageAnnouncement = ({
                 Hapus
               </Button>
               <div className="flex space-x-2">
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="text-xs sm:text-sm"
+                >
                   Batal
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="text-xs sm:text-sm"
+                >
                   {isSubmitting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : null}

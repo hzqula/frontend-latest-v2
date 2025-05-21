@@ -1,6 +1,7 @@
 import { Navigate } from "react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import CoordinatorSeminarHasil from "../coordinator/SeminarHasil";
+import LecturerSeminarHasil from "../lecturer/SeminarHasil";
 
 enum UserRole {
   STUDENT = "STUDENT",
@@ -28,8 +29,8 @@ const SeminarHasil: React.FC = () => {
     //   return <StudentSeminarHasil />;
     case UserRole.COORDINATOR:
       return <CoordinatorSeminarHasil />;
-    // case UserRole.LECTURER:
-    //   return <LecturerSeminarHasil />;
+    case UserRole.LECTURER:
+      return <LecturerSeminarHasil />;
     default:
       return <Navigate to="/login" replace />;
   }

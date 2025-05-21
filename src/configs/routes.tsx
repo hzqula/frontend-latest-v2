@@ -15,6 +15,8 @@ import AssessSeminarProposal from "@/components/AssessSeminar";
 import Landing from "@/pages/landing/Landing";
 import SecurityLog from "@/pages/coordinator/SecurityLog";
 import ResetPassword from "@/pages/auth/ResetPassword";
+import Announcement from "@/pages/coordinator/Announcement";
+import UpdateProfile from "@/pages/student/UpdateProfile";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
 
@@ -27,7 +29,6 @@ export const publicRoutes: RouteObject[] = [
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/reset-password", element: <ResetPassword /> },
-  
 ];
 
 export const privateRoutes: RouteObject[] = [
@@ -50,5 +51,13 @@ export const privateRoutes: RouteObject[] = [
   {
     path: "/seminar-proposal/assess/:seminarId",
     element: <AssessSeminarProposal />,
+  },
+  {
+    path: "/pengumuman",
+    element: <Announcement />,
+  },
+  {
+    path: "/edit-profil",
+    element: <UpdateProfile />,
   },
 ];

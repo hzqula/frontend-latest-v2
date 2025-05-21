@@ -9,6 +9,7 @@ import {
   BookOpenText,
   BookText,
   Logs,
+  Combine,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router";
@@ -128,6 +129,11 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
       icon: BookText,
       path: "/seminar-hasil",
       label: "Seminar Hasil",
+    },
+    {
+      icon: Combine,
+      path: "/pengumuman",
+      label: "Pengumuman",
     },
     {
       icon: Logs,

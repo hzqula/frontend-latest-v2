@@ -69,11 +69,34 @@ export interface Student {
 export interface Lecturer {
   nip: string;
   name: string;
+  phoneNumber?: string;
+  profilePicture?: string;
+}
+
+export interface LecturerSeminarData {
+  name: string;
+  nip: string;
+  advised: number;
+  assessed: number;
+  phoneNumber: number | null;
   profilePicture?: string;
 }
 
 export interface User {
   email: string;
+}
+
+export interface AnnouncementProps {
+  id: number;
+  title: string;
+  content: string;
+  visibility: string[];
+  image?: string;
+  createdAt: string;
+  coordinator?: {
+    name: string;
+    profilePicture?: string;
+  };
 }
 
 export interface SecurityLogs {
@@ -84,4 +107,24 @@ export interface SecurityLogs {
   ipAddress: string;
   device: string;
   createdAt: string;
+}
+
+export interface TooltipPayloadData<T = any> {
+  [key: string]: T;
+}
+
+export interface TooltipPayload<T = any> {
+  payload: TooltipPayloadData<T>;
+  name: string;
+  value: T;
+  color?: string;
+  unit?: string;
+  dataKey?: string;
+  [key: string]: any;
+}
+
+export interface CustomTooltipProps<T = any> {
+  active?: boolean;
+  payload?: TooltipPayload<T>[];
+  label?: string;
 }

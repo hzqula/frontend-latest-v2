@@ -6,8 +6,9 @@ import {
   HomeIcon,
   PanelLeft,
   LogOutIcon,
-  BookOpenText,
-  BookText,
+  Folder,
+  File,
+  Edit,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router";
@@ -119,14 +120,19 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
       label: "Dashboard",
     },
     {
-      icon: BookOpenText,
+      icon: File,
       path: "/seminar-proposal",
       label: "Seminar Proposal",
     },
     {
-      icon: BookText,
+      icon: Folder,
       path: "/seminar-hasil",
       label: "Seminar Hasil",
+    },
+    {
+      icon: Edit,
+      path: "/edit-profil",
+      label: "Edit Profil",
     },
   ];
 

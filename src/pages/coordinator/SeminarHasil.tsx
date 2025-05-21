@@ -24,7 +24,7 @@ import TableSeminarsCompleted from "@/components/TableSeminarsCompleted";
 import DoughnutChart from "@/components/DoughnutChart";
 import ModalSchedulingSeminar from "../../components/ModalSchedulingSeminar";
 
-const CoordinatorSeminarProposal = () => {
+const CoordinatorSeminarHasil = () => {
   const { user, token } = useAuth();
   const [activeTab, setActiveTab] = useState("submitted");
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,15 +62,15 @@ const CoordinatorSeminarProposal = () => {
 
   const submittedSeminars = seminars.filter(
     (seminar: Seminar) =>
-      seminar.status === "SUBMITTED" && seminar.type === "PROPOSAL"
+      seminar.status === "SUBMITTED" && seminar.type === "HASIL"
   );
   const scheduledSeminars = seminars.filter(
     (seminar: Seminar) =>
-      seminar.status === "SCHEDULED" && seminar.type === "PROPOSAL"
+      seminar.status === "SCHEDULED" && seminar.type === "HASIL"
   );
   const completedSeminars = seminars.filter(
     (seminar: Seminar) =>
-      seminar.status === "COMPLETED" && seminar.type === "PROPOSAL"
+      seminar.status === "COMPLETED" && seminar.type === "HASIL"
   );
 
   // Filter seminars berdasarkan pencarian
@@ -158,14 +158,15 @@ const CoordinatorSeminarProposal = () => {
     <CoordinatorLayout>
       <div className="flex flex-col mb-4">
         <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
-          Seminar Proposal
+          Seminar Hasil
         </h1>
         <p className="text-primary md:text-base text-sm">
-          Kelola seminar proposal mahasiswa
+          Kelola seminar hasil mahasiswa
         </p>
       </div>
 
-      <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card 1: Seminar Terlama yang Belum Dijadwalkan */}
         <Card className="col-span-1 sm:col-span-2 py-4 gap-2 px-8 row-span-1 relative overflow-hidden border-env-darker border rounded-md bg-env-darker order-1">
           <div className="w-full flex justify-between items-center">
             <h1 className="text-base md:text-lg font-heading font-bold text-env-lighter">
@@ -224,7 +225,7 @@ const CoordinatorSeminarProposal = () => {
         <Card className="col-span-1 border row-span-2 gap-0 px-8 py-4 overflow-hidden relative order-4 md:order-3">
           <div className="w-full flex justify-between items-center">
             <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
-              Seminar Proposal
+              Seminar Hasil
             </h1>
             <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-green">
               <FormInput className="text-jewel-green w-4 md:w-6 h-4 md:h-6" />
@@ -363,4 +364,4 @@ const CoordinatorSeminarProposal = () => {
   );
 };
 
-export default CoordinatorSeminarProposal;
+export default CoordinatorSeminarHasil;

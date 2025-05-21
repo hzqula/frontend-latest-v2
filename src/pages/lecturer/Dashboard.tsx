@@ -1,9 +1,11 @@
+// pages/Dashboard.tsx
 "use client";
 
-import { Link } from "react-router";
-import { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useApiData } from "../../hooks/useApiData";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApiData } from "@/hooks/useApiData";
+import { toast } from "react-toastify";
+import LecturerLayout from "@/components/layouts/LecturerLayout";
 import {
   Card,
   CardContent,
@@ -11,1096 +13,311 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
-import {
-  FileText,
-  CheckCircle2,
-  BookOpen,
-  ClipboardList,
-  ClipboardPenLine,
-  Search,
+  File,
+  Folder,
+  Signpost,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
-import LecturerLayout from "../../components/layouts/LecturerLayout";
-import { Input } from "../../components/ui/input";
+import { AnnouncementProps, Seminar } from "@/configs/types";
+import ModalDetailAnnouncement from "@/components/ModalDetailAnnouncement";
+import LineChartLecturerSeminars from "@/components/LineChartLecturerSeminars";
 
-const LecturerDashboard = () => {
-  const { user, token } = useAuth();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+const LecturerDashboard: React.FC = () => {
+  const { token, user } = useAuth();
+  const [announcements, setAnnouncements] = useState<AnnouncementProps[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedAnnouncement, setSelectedAnnouncement] =
+    useState<AnnouncementProps | null>(null);
 
-  const studentsQuery = useApiData({ type: "students" });
+  // Ambil data seminar
   const seminarsQuery = useApiData({ type: "seminars" });
 
-  const isLoading = studentsQuery.isLoading || seminarsQuery.isLoading;
-  const isError = studentsQuery.isError || seminarsQuery.isError;
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          "http://localhost:5500/api/announcements/role",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await response.json();
 
-  if (isLoading || !token || !user) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="text-center text-muted-foreground py-10">
-          Memuat data...
-        </div>
-      </div>
-    );
-  }
+        if (!response.ok) {
+          toast.error(data.error || "Gagal mengambil pengumuman");
+          setIsLoading(false);
+          return;
+        }
 
-  if (isError) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="text-center text-red-600 py-10">
-          Gagal memuat data. Silakan coba lagi nanti.
-        </div>
-      </div>
-    );
-  }
+        console.log("Fetched announcements:", data.announcements);
+        setAnnouncements(data.announcements);
+      } catch (error) {
+        console.error("Error fetching announcements:", error);
+        toast.error("Terjadi kesalahan ketika mengambil pengumuman");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const seminars = seminarsQuery.data || [];
+    if (token) {
+      fetchAnnouncements();
+    }
+  }, [token]);
 
-  const completedSeminars = seminars.filter(
-    (seminar: any) => seminar.status === "COMPLETED"
-  );
-
-  const seminarTypes = ["PROPOSAL", "HASIL"];
-  const capitalize = (str: string) =>
-    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-  // Modified code - don't filter by scheduledSeminars:
-  const advisedSeminars = seminars.filter((seminar: any) =>
-    seminar.advisors.some(
-      (advisor: any) => advisor.lecturer?.nip === user.profile.nip
+  // Filter announcements for LECTURER visibility, sort by createdAt, and limit to 5
+  const lecturerAnnouncements = announcements
+    .filter((a) => a.visibility.includes("LECTURER"))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
-  );
+    .slice(0, 5);
 
-  // Modified code - don't filter by scheduledSeminars:
-  const assessedSeminars = seminars.filter((seminar: any) =>
-    seminar.assessors.some(
-      (assessor: any) => assessor.lecturer?.nip === user.profile.nip
-    )
-  );
+  console.log("Lecturer announcements:", lecturerAnnouncements);
 
-  // Combined filtering logic for advised seminars
-  const filteredAdvisedSeminars = advisedSeminars.filter((seminar: any) => {
-    const matchesSearch =
-      seminar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.studentNIM.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.student.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesType = statusFilter === "all" || seminar.type === statusFilter;
-    return matchesSearch && matchesType;
-  });
-
-  // Combined filtering logic for assessed seminars
-  const filteredAssessedSeminars = assessedSeminars.filter((seminar: any) => {
-    const matchesSearch =
-      seminar.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.studentNIM.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      seminar.student.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesType = statusFilter === "all" || seminar.type === statusFilter;
-    return matchesSearch && matchesType;
-  });
-
-  // Fungsi untuk format tanggal
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-ID", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const handlePrev = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? lecturerAnnouncements.length - 1 : prev - 1
+    );
   };
 
-  // Fungsi untuk format waktu
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
+  const handleNext = () => {
+    setCurrentIndex((prev) =>
+      prev === lecturerAnnouncements.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const openModal = (announcement: AnnouncementProps) => {
+    console.log("Opening modal with announcement:", announcement);
+    setSelectedAnnouncement(announcement);
+  };
+
+  const closeModal = () => {
+    console.log("Closing modal");
+    setSelectedAnnouncement(null);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
     });
   };
 
   return (
     <LecturerLayout>
-      <div className="container mx-auto p-4">
-        {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Welcome, {user.profile?.name}!
-            </h1>
-            <p className="text-muted-foreground bg-p">
-              NIP: {user.profile?.nip}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild>
-              <Link to="/seminar-proposal">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Seminar Proposal
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link to="/seminar-hasil">
-                <FileText className="mr-2 h-4 w-4" />
-                Seminar Hasil
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(80px,_auto)] gap-4 mb-6">
-          <Card className="bg-radial-[at_380%_380%] from-primary-600 from-80% to-20% to-primary-800 border-primary-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl -mb-1 font-heading font-black text-primary-foreground">
-                Dibimbing
-              </CardTitle>
-              <CardDescription className="text-primary-foreground text-sm">
-                Menunggu untuk dinilai
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-5xl -my-1 font-bold text-primary-foreground font-heading">
-                  {
-                    advisedSeminars.filter(
-                      (seminar: any) => seminar.status === "SCHEDULED"
-                    ).length
-                  }
-                </div>
-                <div className="p-2 bg-primary rounded-full border-primary-foreground border">
-                  <ClipboardList className="h-6 w-6 text-primary-foreground" />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-primary-400 text-primary-700 hover:bg-accent"
-                onClick={() => setActiveTab("overview")}
-              >
-                Lihat Mahasiswa Bimbingan
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className="bg-radial-[at_380%_380%] from-primary-600 from-80% to-20% to-primary-800 border-primary-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl -mb-1 font-heading font-black text-primary-foreground">
-                Diuji
-              </CardTitle>
-              <CardDescription className="text-primary-foreground text-sm">
-                Menunggu untuk dinilai
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-5xl -my-1 font-bold text-primary-foreground font-heading">
-                  {
-                    assessedSeminars.filter(
-                      (seminar: any) => seminar.status === "SCHEDULED"
-                    ).length
-                  }
-                </div>
-                <div className="p-2 bg-primary rounded-full border-primary-foreground border">
-                  <ClipboardPenLine className="h-6 w-6 text-primary-foreground" />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-primary-400 text-primary-700 hover:bg-accent"
-                onClick={() => setActiveTab("submissions")}
-              >
-                Lihat Mahasiswa Diuji
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className="bg-radial-[at_380%_380%] from-primary-600 from-80% to-20% to-primary-800 border-primary-200">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-2xl -mb-1 font-heading font-black text-primary-foreground">
-                Selesai
-              </CardTitle>
-              <CardDescription className="text-primary-foreground text-sm">
-                Telah selesai dinilai
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-5xl -my-1 font-bold text-primary-foreground font-heading">
-                  {completedSeminars.length}
-                </div>
-                <div className="p-2 bg-primary rounded-full border-primary-foreground border">
-                  <CheckCircle2 className="h-6 w-6 text-primary-foreground" />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                variant="outline"
-                className="w-full border-primary-400 text-primary-700 hover:bg-accent"
-                onClick={() => setActiveTab("completed")}
-              >
-                Lihat Riwayat Seminar
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-
-        {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="overflow-x-auto pb-2">
-            <TabsList className="grid grid-cols-3 mb-6 bg-primary">
-              <TabsTrigger
-                value="overview"
-                className={`text-primary-foreground ${
-                  activeTab === "overview" ? "text-primary-800" : ""
-                }`}
-              >
-                Dibimbing
-              </TabsTrigger>
-              <TabsTrigger
-                value="submissions"
-                className={`text-primary-foreground ${
-                  activeTab === "submissions" ? "text-primary-800" : ""
-                }`}
-              >
-                Diuji
-              </TabsTrigger>
-              <TabsTrigger
-                value="completed"
-                className={`text-primary-foreground ${
-                  activeTab === "completed" ? "text-primary-800" : ""
-                }`}
-              >
-                Selesai
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          {/* Overview Tab - Now using a 4-column grid with minmax 200px */}
-          <TabsContent value="overview">
-            <Card className="bg-white">
-              <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                  <div>
-                    <CardTitle className="text-2xl -mb-1 font-heading font-black text-primary-800">
-                      Mahasiswa Dibimbing
-                    </CardTitle>
-                    <CardDescription className="text-primary">
-                      Seminar yang menunggu dinilai
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-3 h-4 w-4 text-primary-600" />
-                      <Input
-                        type="search"
-                        placeholder="Cari seminar..."
-                        className="w-full md:w-[200px] pl-8 border-primary-400"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    <Select defaultValue="all" onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px] border-primary-400">
-                        <SelectValue placeholder="Filter by type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        {seminarTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {capitalize(type)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 pb-6">
-                {/* Desktop View */}
-                <div className="hidden md:block rounded-sm overflow-x-auto border border-primary">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-primary text-primary-foreground font-heading font-medium text-xs lg:text-sm">
-                        <th className="p-3 lg:p-4 w-[30%]">Judul Penelitian</th>
-                        <th className="p-3 lg:p-4 w-[20%]">Mahasiswa</th>
-                        <th className="p-3 lg:p-4 w-[15%]">Jadwal Seminar</th>
-                        <th className="p-3 lg:p-4 w-[10%]">Tempat</th>
-                        <th className="p-3 lg:p-4 w-[10%]">Jenis Seminar</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAdvisedSeminars.filter(
-                        (seminar: any) => seminar.status === "SCHEDULED"
-                      ).length > 0 ? (
-                        filteredAdvisedSeminars
-                          .filter(
-                            (seminar: any) => seminar.status === "SCHEDULED"
-                          )
-                          .map((seminar: any) => (
-                            <tr
-                              key={seminar.id}
-                              className="border-b border-primary-200 text-primary-800 text-xs lg:text-sm"
-                            >
-                              <td className="p-3 lg:p-4">
-                                <div className="font-medium">
-                                  {seminar.title}
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <div className="font-medium text-primary-800">
-                                  {seminar.student?.name || "N/A"}
-                                </div>
-                                <div className="text-sm text-primary-600">
-                                  {seminar.studentNIM}
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <div>{formatDate(seminar.time)}</div>
-                                <div className="text-sm text-primary-600">
-                                  {formatTime(seminar.time)} WIB
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                {seminar.room || "TBD"}
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <Badge
-                                  variant="outline"
-                                  className="mt-1 text-primary-800"
-                                >
-                                  {seminar.type}
-                                </Badge>
-                              </td>
-                            </tr>
-                          ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className="p-4 text-center text-primary-600"
-                          >
-                            Tidak ada mahasiswa yang dibimbing.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile View */}
-                <div className="md:hidden">
-                  <div className="space-y-3 sm:space-y-4">
-                    {filteredAdvisedSeminars.filter(
-                      (seminar: any) => seminar.status === "SCHEDULED"
-                    ).length > 0 ? (
-                      filteredAdvisedSeminars
-                        .filter(
-                          (seminar: any) => seminar.status === "SCHEDULED"
-                        )
-                        .map((seminar: any) => (
-                          <div
-                            key={seminar.id}
-                            className="border border-primary rounded-sm p-2 sm:p-3 text-primary-800 shadow-sm"
-                          >
-                            <div className="space-y-2 sm:space-y-3">
-                              <div>
-                                <h3 className="text-xs font-bold text-primary-600">
-                                  Judul
-                                </h3>
-                                <p className="font-medium text-xs sm:text-sm break-words line-clamp-2 sm:line-clamp-none">
-                                  {seminar.title}
-                                </p>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Mahasiswa
-                                  </h3>
-                                  <p className="text-xs sm:text-sm truncate">
-                                    {seminar.student?.name || "N/A"}
-                                  </p>
-                                  <p className="text-xs text-primary-600">
-                                    {seminar.studentNIM}
-                                  </p>
-                                </div>
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Tanggal & Waktu
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    {formatDate(
-                                      seminar.time || seminar.createdAt
-                                    )}
-                                  </p>
-                                  <p className="text-xs text-primary-600">
-                                    {seminar.time
-                                      ? formatTime(seminar.time)
-                                      : "TBD"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Ruangan
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    {seminar.room || "TBD"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Jenis Seminar
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    <Badge
-                                      variant="outline"
-                                      className="mt-1 text-primary-800"
-                                    >
-                                      {seminar.type}
-                                    </Badge>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                    ) : (
-                      <div className="border border-primary rounded-sm p-3 text-center text-primary-600 text-xs sm:text-sm">
-                        Tidak ada mahasiswa yang dibimbing.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* New Submissions Tab */}
-          <TabsContent value="submissions">
-            <Card className="bg-white">
-              <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                  <div>
-                    <CardTitle className="text-2xl -mb-1 font-heading font-black text-primary-800">
-                      Mahasiswa Diuji
-                    </CardTitle>
-                    <CardDescription className="text-primary">
-                      Seminar yang menunggu dinilai
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-3 h-4 w-4 text-primary-600" />
-                      <Input
-                        type="search"
-                        placeholder="Cari seminar..."
-                        className="w-full md:w-[200px] pl-8 border-primary-400"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    <Select defaultValue="all" onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px] border-primary-400">
-                        <SelectValue placeholder="Filter by type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        {seminarTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {capitalize(type)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 pb-6">
-                {/* Desktop View */}
-                <div className="hidden md:block rounded-sm overflow-x-auto border border-primary">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-primary text-primary-foreground font-heading font-medium text-xs lg:text-sm">
-                        <th className="p-3 lg:p-4 w-[30%]">Judul Penelitian</th>
-                        <th className="p-3 lg:p-4 w-[20%]">Mahasiswa</th>
-                        <th className="p-3 lg:p-4 w-[15%]">Jadwal Seminar</th>
-                        <th className="p-3 lg:p-4 w-[10%]">Tempat</th>
-                        <th className="p-3 lg:p-4 w-[10%]">Jenis Seminar</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAssessedSeminars.filter(
-                        (seminar: any) => seminar.status === "SCHEDULED"
-                      ).length > 0 ? (
-                        filteredAssessedSeminars
-                          .filter(
-                            (seminar: any) => seminar.status === "SCHEDULED"
-                          )
-                          .map((seminar: any) => (
-                            <tr
-                              key={seminar.id}
-                              className="border-b border-primary-200 text-primary-800 text-xs lg:text-sm"
-                            >
-                              <td className="p-3 lg:p-4">
-                                <div className="font-medium">
-                                  {seminar.title}
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <div className="font-medium text-primary-800">
-                                  {seminar.student?.name || "N/A"}
-                                </div>
-                                <div className="text-sm text-primary-600">
-                                  {seminar.studentNIM}
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <div>{formatDate(seminar.time)}</div>
-                                <div className="text-sm text-primary-600">
-                                  {formatTime(seminar.time)} WIB
-                                </div>
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                {seminar.room || "TBD"}
-                              </td>
-                              <td className="p-3 lg:p-4">
-                                <Badge
-                                  variant="outline"
-                                  className="mt-1 text-primary-800"
-                                >
-                                  {seminar.type}
-                                </Badge>
-                              </td>
-                            </tr>
-                          ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className="p-4 text-center text-primary-600"
-                          >
-                            Tidak ada mahasiswa yang diuji.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile View */}
-                <div className="md:hidden">
-                  <div className="space-y-3 sm:space-y-4">
-                    {filteredAssessedSeminars.filter(
-                      (seminar: any) => seminar.status === "SCHEDULED"
-                    ).length > 0 ? (
-                      filteredAssessedSeminars
-                        .filter(
-                          (seminar: any) => seminar.status === "SCHEDULED"
-                        )
-                        .map((seminar: any) => (
-                          <div
-                            key={seminar.id}
-                            className="border border-primary rounded-sm p-2 sm:p-3 text-primary-800 shadow-sm"
-                          >
-                            <div className="space-y-2 sm:space-y-3">
-                              <div>
-                                <h3 className="text-xs font-bold text-primary-600">
-                                  Judul
-                                </h3>
-                                <p className="font-medium text-xs sm:text-sm break-words line-clamp-2 sm:line-clamp-none">
-                                  {seminar.title}
-                                </p>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Mahasiswa
-                                  </h3>
-                                  <p className="text-xs sm:text-sm truncate">
-                                    {seminar.student?.name || "N/A"}
-                                  </p>
-                                  <p className="text-xs text-primary-600">
-                                    {seminar.studentNIM}
-                                  </p>
-                                </div>
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Tanggal & Waktu
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    {formatDate(
-                                      seminar.time || seminar.createdAt
-                                    )}
-                                  </p>
-                                  <p className="text-xs text-primary-600">
-                                    {seminar.time
-                                      ? formatTime(seminar.time)
-                                      : "TBD"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Ruangan
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    {seminar.room || "TBD"}
-                                  </p>
-                                </div>
-                                <div>
-                                  <h3 className="text-xs font-bold text-primary-600">
-                                    Jenis Seminar
-                                  </h3>
-                                  <p className="text-xs sm:text-sm">
-                                    <Badge
-                                      variant="outline"
-                                      className="mt-1 text-primary-800"
-                                    >
-                                      {seminar.type}
-                                    </Badge>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                    ) : (
-                      <div className="border border-primary rounded-sm p-3 text-center text-primary-600 text-xs sm:text-sm">
-                        Tidak ada mahasiswa yang diuji.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Completed Seminars Tab */}
-          <TabsContent value="completed">
-            <Card className="bg-white">
-              <CardHeader>
-                <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                  <div>
-                    <CardTitle className="text-primary-700">
-                      Riwayat Seminar
-                    </CardTitle>
-                    <CardDescription className="text-primary-600">
-                      Seminar yang telah selesai dinilai
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-3 h-4 w-4 text-primary-600" />
-                      <Input
-                        type="search"
-                        placeholder="Cari seminar..."
-                        className="w-full md:w-[200px] pl-8 border-primary-400"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    <Select defaultValue="all" onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-[180px] border-primary-400">
-                        <SelectValue placeholder="Filter by type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        {seminarTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {capitalize(type)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <Tabs defaultValue="dibimbing" className="w-full">
-                  <TabsList className="grid grid-cols-2 mb-6 bg-primary">
-                    <TabsTrigger
-                      value="dibimbing"
-                      className="text-primary-foreground data-[state=active]:text-primary-800"
-                    >
-                      Dibimbing
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="diuji"
-                      className="text-primary-foreground data-[state=active]:text-primary-800"
-                    >
-                      Diuji
-                    </TabsTrigger>
-                  </TabsList>
-
-                  {/* Dibimbing Tab */}
-                  <TabsContent value="dibimbing">
-                    {/* Desktop View */}
-                    <div className="hidden md:block rounded-sm overflow-x-auto border border-primary">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="bg-primary text-primary-foreground font-heading font-medium text-xs lg:text-sm">
-                            <th className="p-3 lg:p-4 w-[30%]">
-                              Judul Penelitian
-                            </th>
-                            <th className="p-3 lg:p-4 w-[20%]">Mahasiswa</th>
-                            <th className="p-3 lg:p-4 w-[15%]">
-                              Jadwal Seminar
-                            </th>
-                            <th className="p-3 lg:p-4 w-[10%]">Tempat</th>
-                            <th className="p-3 lg:p-4 w-[10%]">
-                              Jenis Seminar
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredAdvisedSeminars.filter(
-                            (seminar: any) => seminar.status === "COMPLETED"
-                          ).length > 0 ? (
-                            filteredAdvisedSeminars
-                              .filter(
-                                (seminar: any) => seminar.status === "COMPLETED"
-                              )
-                              .map((seminar: any) => (
-                                <tr
-                                  key={seminar.id}
-                                  className="border-b border-primary-200 text-primary-800 text-xs lg:text-sm"
-                                >
-                                  <td className="p-3 lg:p-4">
-                                    <div className="font-medium">
-                                      {seminar.title}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <div className="font-medium text-primary-800">
-                                      {seminar.student?.name || "N/A"}
-                                    </div>
-                                    <div className="text-sm text-primary-600">
-                                      {seminar.studentNIM}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <div>{formatDate(seminar.time)}</div>
-                                    <div className="text-sm text-primary-600">
-                                      {formatTime(seminar.time)} WIB
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    {seminar.room || "TBD"}
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <Badge
-                                      variant="outline"
-                                      className="mt-1 text-primary-800"
-                                    >
-                                      {seminar.type}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={6}
-                                className="p-4 text-center text-primary-600"
-                              >
-                                Tidak ada seminar yang telah selesai.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Mobile View */}
-                    <div className="md:hidden">
-                      <div className="space-y-3 sm:space-y-4">
-                        {filteredAdvisedSeminars.filter(
-                          (seminar: any) => seminar.status === "COMPLETED"
-                        ).length > 0 ? (
-                          filteredAdvisedSeminars
-                            .filter(
-                              (seminar: any) => seminar.status === "COMPLETED"
-                            )
-                            .map((seminar: any) => (
-                              <div
-                                key={seminar.id}
-                                className="border border-primary rounded-sm p-2 sm:p-3 text-primary-800 shadow-sm"
-                              >
-                                <div className="space-y-2 sm:space-y-3">
-                                  <div>
-                                    <h3 className="text-xs font-bold text-primary-600">
-                                      Judul
-                                    </h3>
-                                    <p className="font-medium text-xs sm:text-sm break-words line-clamp-2 sm:line-clamp-none">
-                                      {seminar.title}
-                                    </p>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Mahasiswa
-                                      </h3>
-                                      <p className="text-xs sm:text-sm truncate">
-                                        {seminar.student?.name || "N/A"}
-                                      </p>
-                                      <p className="text-xs text-primary-600">
-                                        {seminar.studentNIM}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Tanggal & Waktu
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        {formatDate(
-                                          seminar.time || seminar.createdAt
-                                        )}
-                                      </p>
-                                      <p className="text-xs text-primary-600">
-                                        {seminar.time
-                                          ? formatTime(seminar.time)
-                                          : "TBD"}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Ruangan
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        {seminar.room || "TBD"}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Jenis Seminar
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        <Badge
-                                          variant="outline"
-                                          className="mt-1 text-primary-800"
-                                        >
-                                          {seminar.type}
-                                        </Badge>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))
-                        ) : (
-                          <div className="border border-primary rounded-sm p-3 text-center text-primary-600 text-xs sm:text-sm">
-                            Tidak seminar yang telah selesai.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Diuji Tab */}
-                  <TabsContent value="diuji">
-                    {/* Desktop View */}
-                    <div className="hidden md:block rounded-sm overflow-x-auto border border-primary">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="bg-primary text-primary-foreground font-heading font-medium text-xs lg:text-sm">
-                            <th className="p-3 lg:p-4 w-[30%]">
-                              Judul Penelitian
-                            </th>
-                            <th className="p-3 lg:p-4 w-[20%]">Mahasiswa</th>
-                            <th className="p-3 lg:p-4 w-[15%]">
-                              Jadwal Seminar
-                            </th>
-                            <th className="p-3 lg:p-4 w-[10%]">Tempat</th>
-                            <th className="p-3 lg:p-4 w-[10%]">
-                              Jenis Seminar
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredAssessedSeminars.filter(
-                            (seminar: any) => seminar.status === "COMPLETED"
-                          ).length > 0 ? (
-                            filteredAssessedSeminars
-                              .filter(
-                                (seminar: any) => seminar.status === "COMPLETED"
-                              )
-                              .map((seminar: any) => (
-                                <tr
-                                  key={seminar.id}
-                                  className="border-b border-primary-200 text-primary-800 text-xs lg:text-sm"
-                                >
-                                  <td className="p-3 lg:p-4">
-                                    <div className="font-medium">
-                                      {seminar.title}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <div className="font-medium text-primary-800">
-                                      {seminar.student?.name || "N/A"}
-                                    </div>
-                                    <div className="text-sm text-primary-600">
-                                      {seminar.studentNIM}
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <div>{formatDate(seminar.time)}</div>
-                                    <div className="text-sm text-primary-600">
-                                      {formatTime(seminar.time)} WIB
-                                    </div>
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    {seminar.room || "TBD"}
-                                  </td>
-                                  <td className="p-3 lg:p-4">
-                                    <Badge
-                                      variant="outline"
-                                      className="mt-1 text-primary-800"
-                                    >
-                                      {seminar.type}
-                                    </Badge>
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={6}
-                                className="p-4 text-center text-primary-600"
-                              >
-                                Tidak ada seminar yang telah selesai
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Mobile View */}
-                    <div className="md:hidden">
-                      <div className="space-y-3 sm:space-y-4">
-                        {filteredAssessedSeminars.filter(
-                          (seminar: any) => seminar.status === "COMPLETED"
-                        ).length > 0 ? (
-                          filteredAssessedSeminars
-                            .filter(
-                              (seminar: any) => seminar.status === "COMPLETED"
-                            )
-                            .map((seminar: any) => (
-                              <div
-                                key={seminar.id}
-                                className="border border-primary rounded-sm p-2 sm:p-3 text-primary-800 shadow-sm"
-                              >
-                                <div className="space-y-2 sm:space-y-3">
-                                  <div>
-                                    <h3 className="text-xs font-bold text-primary-600">
-                                      Judul
-                                    </h3>
-                                    <p className="font-medium text-xs sm:text-sm break-words line-clamp-2 sm:line-clamp-none">
-                                      {seminar.title}
-                                    </p>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Mahasiswa
-                                      </h3>
-                                      <p className="text-xs sm:text-sm truncate">
-                                        {seminar.student?.name || "N/A"}
-                                      </p>
-                                      <p className="text-xs text-primary-600">
-                                        {seminar.studentNIM}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Tanggal & Waktu
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        {formatDate(
-                                          seminar.time || seminar.createdAt
-                                        )}
-                                      </p>
-                                      <p className="text-xs text-primary-600">
-                                        {seminar.time
-                                          ? formatTime(seminar.time)
-                                          : "TBD"}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Ruangan
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        {seminar.room || "TBD"}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <h3 className="text-xs font-bold text-primary-600">
-                                        Jenis Seminar
-                                      </h3>
-                                      <p className="text-xs sm:text-sm">
-                                        <Badge
-                                          variant="outline"
-                                          className="mt-1 text-primary-800"
-                                        >
-                                          {seminar.type}
-                                        </Badge>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))
-                        ) : (
-                          <div className="border border-primary rounded-sm p-3 text-center text-primary-600 text-xs sm:text-sm">
-                            Tidak ada seminar yang telah selesai
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+      <div className="flex flex-col mb-4">
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
+          Dashboard
+        </h1>
+        <p className="text-primary md:text-base text-sm">
+          Assalamu'alaikum, selamat datang {user?.profile.name}
+        </p>
       </div>
+      <div className="grid grid-cols-1 auto-rows-[minmax(160px,_auto)] sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Card Pengumuman */}
+        <Card className="col-span-1 sm:col-span-2 md:col-span-3 py-4 px-8 row-span-2 relative overflow-hidden border-border border rounded-md">
+          <div className="w-full flex justify-between items-center mb-4">
+            <h1 className="text-base md:text-lg font-heading font-bold text-primary">
+              Pengumuman
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-red">
+              <Signpost className="text-jewel-red w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          {isLoading ? (
+            <p className="text-center text-muted-foreground">
+              Memuat pengumuman...
+            </p>
+          ) : lecturerAnnouncements.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              Tidak ada pengumuman untuk Dosen.
+            </p>
+          ) : (
+            <div className="flex flex-col h-full">
+              <div className="flex flex-row gap-4 h-[200px]">
+                <div className="w-1/2">
+                  <img
+                    src={
+                      lecturerAnnouncements[currentIndex].image ||
+                      "/placeholder.png"
+                    }
+                    alt={lecturerAnnouncements[currentIndex].title}
+                    className="w-full h-full object-cover rounded-sm border-env-darker border-2"
+                  />
+                </div>
+                <div className="w-1/2 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center mb-2">
+                      <div className="flex-2">
+                        <h2 className="text-base md:text-lg font-bold text-env-darker">
+                          {lecturerAnnouncements[currentIndex].title}
+                        </h2>
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <Calendar className="w-3 md:w-4 h-3 md:h-4 text-muted-foreground" />
+                        <p className="text-muted-foreground text-xs">
+                          {formatDate(
+                            lecturerAnnouncements[currentIndex].createdAt
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-3">
+                      {lecturerAnnouncements[currentIndex].content}
+                    </p>
+                  </div>
+                  <Button
+                    variant="default"
+                    className="text-xs sm:text-sm"
+                    onClick={() =>
+                      openModal(lecturerAnnouncements[currentIndex])
+                    }
+                  >
+                    Lihat Postingan
+                  </Button>
+                </div>
+              </div>
+              {lecturerAnnouncements.length > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePrev}
+                    disabled={lecturerAnnouncements.length <= 1}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </Button>
+                  <div className="flex gap-2">
+                    {lecturerAnnouncements.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
+                          index === currentIndex
+                            ? "bg-pastel-blue"
+                            : "bg-muted-foreground"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleNext}
+                    disabled={lecturerAnnouncements.length <= 1}
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+        {/* Card Info 1 */}
+        <Card className="col-span-1 row-span-1 justify-between gap-0 px-8 py-4 bg-background overflow-hidden relative order-2">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
+              Info 1
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-green">
+              <File className="text-jewel-green w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          <p className="-mt-2 text-env-darker font-bold md:text-4xl text-3xl"></p>
+          <CardFooter className="p-0 text-muted-foreground text-sm">
+            Deskripsi dari info 1
+          </CardFooter>
+        </Card>
+        {/* Card Info 2 */}
+        <Card className="col-span-1 row-span-1 justify-between gap-0 px-8 py-4 bg-background overflow-hidden relative order-3">
+          <div className="w-full flex justify-between items-center">
+            <h1 className="text-base md:text-lg font-heading font-bold text-muted-foreground">
+              Info 2
+            </h1>
+            <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-blue">
+              <Folder className="text-jewel-blue w-4 md:w-6 h-4 md:h-6" />
+            </div>
+          </div>
+          <p className="-mt-2 text-env-darker font-bold md:text-4xl text-3xl"></p>
+          <CardFooter className="p-0 text-muted-foreground text-sm">
+            Deskripsi dari info 2
+          </CardFooter>
+        </Card>
+        {/* Card Tren Seminar yang Dibimbing */}
+        <Card className="bg-white sm:col-span-2 overflow-hidden order-4">
+          <CardHeader className="bg-env-darker">
+            <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
+              Tren Seminar yang Dibimbing
+            </CardTitle>
+            <CardDescription className="text-primary-foreground text-sm">
+              Jumlah seminar yang anda bimbing (proposal dan hasil)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {seminarsQuery.isLoading ? (
+              <p className="text-center text-muted-foreground">
+                Memuat data seminar...
+              </p>
+            ) : seminarsQuery.isError ? (
+              <p className="text-center text-red-600">
+                Gagal memuat data seminar.
+              </p>
+            ) : (
+              <LineChartLecturerSeminars
+                seminars={seminarsQuery.data || []}
+                role="ADVISED"
+              />
+            )}
+          </CardContent>
+        </Card>
+        {/* Card Tren Seminar yang Diuji */}
+        <Card className="bg-white sm:col-span-2 overflow-hidden order-5">
+          <CardHeader className="bg-env-darker">
+            <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
+              Tren Seminar yang Diuji
+            </CardTitle>
+            <CardDescription className="text-primary-foreground text-sm">
+              Jumlah seminar yang anda uji (proposal dan hasil)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {seminarsQuery.isLoading ? (
+              <p className="text-center text-muted-foreground">
+                Memuat data seminar...
+              </p>
+            ) : seminarsQuery.isError ? (
+              <p className="text-center text-red-600">
+                Gagal memuat data seminar.
+              </p>
+            ) : (
+              <LineChartLecturerSeminars
+                seminars={seminarsQuery.data || []}
+                role="ASSESSED"
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      {selectedAnnouncement &&
+        (console.log("Rendering modal with:", selectedAnnouncement),
+        (
+          <ModalDetailAnnouncement
+            isOpen={!!selectedAnnouncement}
+            onClose={closeModal}
+            announcement={selectedAnnouncement}
+            themeColor="pastel-red"
+          />
+        ))}
     </LecturerLayout>
   );
 };

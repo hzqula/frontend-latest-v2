@@ -1,4 +1,3 @@
-// components/LineChartLecturerSeminars.tsx
 "use client";
 
 import React from "react";
@@ -22,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Definisi props untuk komponen
 interface LineChartLecturerSeminarsProps {
   seminars: Seminar[];
   role: "ADVISED" | "ASSESSED";
@@ -35,7 +35,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
 
   // Memproses data seminar untuk 6 bulan terakhir
   const processSeminarData = (seminars: Seminar[]) => {
-    const currentDate = new Date("2025-05-21T17:09:00Z"); // Tanggal saat ini
+    const currentDate = new Date("2025-05-21T17:16:00Z"); // Tanggal saat ini
     const months = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date(currentDate);
@@ -137,28 +137,12 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
           `}
         >
           {type === "Seminar Proposal" ? (
-            <div
-              className={`flex items-center justify-center w-5 md:w-6 h-5 md:h-6 rounded-full mr-1 ${
-                role === "ADVISED" ? "bg-pastel-blue" : "bg-pastel-green"
-              }`}
-            >
-              <File
-                className={`w-3 md:w-4 h-3 md:h-4 ${
-                  role === "ADVISED" ? "text-jewel-blue" : "text-jewel-green"
-                }`}
-              />
+            <div className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-pastel-blue rounded-full mr-1">
+              <File className="w-3 md:w-4 h-3 md:h-4 text-jewel-blue" />
             </div>
           ) : (
-            <div
-              className={`flex items-center justify-center w-5 md:w-6 h-5 md:h-6 rounded-full mr-1 ${
-                role === "ADVISED" ? "bg-pastel-blue" : "bg-pastel-green"
-              }`}
-            >
-              <Folder
-                className={`w-3 md:w-4 h-3 md:h-4 ${
-                  role === "ADVISED" ? "text-jewel-blue" : "text-jewel-green"
-                }`}
-              />
+            <div className="flex items-center justify-center w-5 md:w-6 h-5 md:h-6 bg-pastel-green rounded-full mr-1">
+              <Folder className="w-3 md:w-4 h-3 md:h-4 text-jewel-green" />
             </div>
           )}
           {absChange}%
@@ -197,9 +181,6 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
     return null;
   };
 
-  // Tentukan warna berdasarkan peran
-  const lineColor = role === "ADVISED" ? "#064359" : "#C50043";
-
   return (
     <div>
       <ResponsiveContainer width="100%" height={300}>
@@ -221,7 +202,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
             type="monotone"
             dataKey="proposal"
             name="Seminar Proposal"
-            stroke={lineColor}
+            stroke="#1e40af" // jewel-blue
             strokeWidth={1.5}
             activeDot={{ r: 8 }}
           />
@@ -229,7 +210,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
             type="monotone"
             dataKey="result"
             name="Seminar Hasil"
-            stroke={lineColor}
+            stroke="#15803d" // jewel-green
             strokeWidth={1.5}
             activeDot={{ r: 8 }}
           />

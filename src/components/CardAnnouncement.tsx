@@ -28,7 +28,7 @@ const CardAnnouncement = ({
   console.log(visibleBadges);
 
   return (
-    <Card className="py-6 hover:shadow-md transition-all duration-200 border border-border">
+    <Card className="py-6 hover:shadow-md transition-all duration-200 border border-env-base/50">
       <CardContent className="flex flex-col gap-4">
         <div className="">
           {announcement.image && (
@@ -63,9 +63,9 @@ const CardAnnouncement = ({
           ))}
         </div>
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
-          className="w-full border-primary-400 text-primary-800 text-xs sm:text-sm"
+          className="w-full text-primary-foreground text-xs sm:text-sm"
           onClick={() => onManage(announcement)}
         >
           Kelola

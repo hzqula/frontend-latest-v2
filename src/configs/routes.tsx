@@ -16,6 +16,7 @@ import Landing from "@/pages/landing/Landing";
 import SecurityLog from "@/pages/coordinator/SecurityLog";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Announcement from "@/pages/coordinator/Announcement";
+import UpdateProfile from "@/pages/student/UpdateProfile";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
 
@@ -52,7 +53,11 @@ export const privateRoutes: RouteObject[] = [
     element: <AssessSeminarProposal />,
   },
   {
-    path: "/pwngumuman",
+    path: "/pengumuman",
     element: <Announcement />,
+  },
+  {
+    path: "/edit-profil",
+    element: <UpdateProfile />,
   },
 ];

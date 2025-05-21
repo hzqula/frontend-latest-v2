@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Seminar, Lecturer, LecturerSeminarData } from "@/configs/types";
 import CoordinatorLayout from "@/components/layouts/CoordinatorLayout";
-import { File, Folder, User, User2 } from "lucide-react";
+import { File, Folder, User, Users, UsersRound } from "lucide-react";
 import LineChartSeminars from "@/components/LineChartSeminars";
 import TableLecturersDistribution from "@/components/TableLecturersDistribution";
 
@@ -89,9 +89,6 @@ const CoordinatorDashboard = () => {
     }
   );
 
-  console.log("Lecturer: ", lecturers);
-  console.log("Lecturers: ", lecturerSeminarData);
-
   return (
     <CoordinatorLayout>
       {/* Header */}
@@ -110,7 +107,7 @@ const CoordinatorDashboard = () => {
               Mahasiswa
             </h1>
             <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-purple">
-              <User2 className="text-jewel-purple w-4 md:w-6 h-4 md:h-6" />
+              <UsersRound className="text-jewel-purple w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
           <p className="-mt-2 text-env-darker font-bold md:text-4xl text-3xl">
@@ -127,7 +124,7 @@ const CoordinatorDashboard = () => {
               Dosen
             </h1>
             <div className="w-8 md:w-10 h-8 md:h-10 flex items-center justify-center rounded-full bg-pastel-yellow">
-              <User className="text-jewel-yellow w-4 md:w-6 h-4 md:h-6" />
+              <Users className="text-jewel-yellow w-4 md:w-6 h-4 md:h-6" />
             </div>
           </div>
           <p className="-mt-2 text-env-darker font-bold md:text-4xl text-3xl">
@@ -186,7 +183,7 @@ const CoordinatorDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-white sm:col-span-2 gap-0 border-env-darker border">
+        <Card className="bg-white sm:col-span-2 gap-0 border border-border">
           <CardHeader>
             <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary">
               Dosen

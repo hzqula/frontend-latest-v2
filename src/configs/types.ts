@@ -79,10 +79,24 @@ export interface LecturerSeminarData {
   advised: number;
   assessed: number;
   phoneNumber: number | null;
+  profilePicture?: string;
 }
 
 export interface User {
   email: string;
+}
+
+export interface AnnouncementProps {
+  id: number;
+  title: string;
+  content: string;
+  visibility: string[];
+  image?: string;
+  createdAt: string;
+  coordinator?: {
+    name: string;
+    profilePicture?: string;
+  };
 }
 
 export interface SecurityLogs {

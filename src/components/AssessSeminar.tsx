@@ -20,137 +20,10 @@ import {
   UserCog,
 } from "lucide-react";
 import AssessmentCriterion from "@/components/AssessmentCriterion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Seminar } from "@/configs/types";
 import SeminarDetail from "@/components/SeminarDetail";
-
-interface ScoreVisualizationProps {
-  scores: {
-    presentation: number;
-    mastery: number;
-    writing?: number;
-    characteristic?: number;
-  };
-  isAdvisor: boolean;
-}
-
-const ScoreVisualization: React.FC<ScoreVisualizationProps> = ({
-  scores,
-  isAdvisor,
-}) => {
-  const data = [
-    {
-      name: "Penyajian Makalah / Presentasi",
-      score: scores.presentation,
-      description:
-        "Kejelasan materi yang disampaikan, sikap, kejelasan vokal dan body language, interaksi dan komunikasi, tampilan/design materi presentasi",
-    },
-    {
-      name: "Penguasaan Materi",
-      score: scores.mastery,
-      description:
-        "Pemahaman materi, kemampuan menjawab pertanyaan, kedalaman pengetahuan",
-    },
-  ];
-
-  if (isAdvisor) {
-    data.push({
-      name: "Karakteristik Mahasiswa",
-      score: scores.characteristic || 0,
-      description:
-        "Inisiatif, ketekunan, adaptabilitas, respons terhadap umpan balik dan bimbingan",
-    });
-  } else {
-    data.push({
-      name: "Penulisan Makalah",
-      score: scores.writing || 0,
-      description:
-        "Kualitas dokumen penelitian, kejelasan ide, kutipan dan referensi yang tepat",
-    });
-  }
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "#10b981";
-    if (score >= 80) return "#2563eb";
-    if (score >= 70) return "#f59e0b";
-    return "#dc2626";
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div
-          className="bg-white border border-gray-200 rounded-lg shadow-md p-3"
-          style={{
-            backgroundColor: "#fff",
-            border: "1px solid #e2e8f0",
-            borderRadius: "8px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          }}
-        >
-          <p className="text-sm font-semibold text-gray-800">{label}</p>
-          <p className="text-sm text-gray-600">Nilai: {data.score}/100</p>
-          {data.description && (
-            <p className="text-xs text-gray-500 mt-1">{data.description}</p>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={data}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis
-              type="number"
-              domain={[0, 100]}
-              tick={{ fontSize: 12, fill: "#64748b" }}
-            />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={{ fontSize: 14, fill: "#334155" }}
-              width={150}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="score"
-              radius={[0, 8, 8, 0]}
-              barSize={20}
-              fill="#10b981"
-            >
-              {data.map((entry, index) => (
-                <Bar
-                  key={`bar-${index}`}
-                  dataKey="score"
-                  fill={getScoreColor(entry.score)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
+import BarChartScoreVisualization from "./BarChartScoreVisualization";
 
 const AssessSeminarProposal = () => {
   const { seminarId } = useParams<{ seminarId: string }>();
@@ -292,29 +165,6 @@ const AssessSeminarProposal = () => {
     }
   };
 
-  const calculateAverage = () => {
-    const {
-      presentationScore,
-      masteryScore,
-      writingScore,
-      characteristicScore,
-    } = scores;
-    const presentation = parseFloat(presentationScore) || 0;
-    const mastery = parseFloat(masteryScore) || 0;
-    let weightedAverage;
-
-    if (isAdvisor) {
-      const characteristic = parseFloat(characteristicScore) || 0;
-      weightedAverage =
-        presentation * 0.25 + mastery * 0.4 + characteristic * 0.35;
-    } else {
-      const writing = parseFloat(writingScore) || 0;
-      weightedAverage = presentation * 0.25 + mastery * 0.4 + writing * 0.35;
-    }
-
-    return weightedAverage.toFixed(1);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -436,13 +286,23 @@ const AssessSeminarProposal = () => {
   const formattedFinal = finalScore.toFixed(1);
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-emerald-600";
-    if (score >= 80) return "text-blue-600";
-    if (score >= 70) return "text-amber-600";
+    if (score >= 90) return "text-jewel-green";
+    if (score >= 80) return "text-jewel-blue";
+    if (score >= 70) return "text-jewel-purple";
+    if (score >= 60) return "text-jewel-yellow";
     return "text-red-600";
   };
 
-  const scoreColor = getScoreColor(finalScore);
+  const getLetterGrade = (score: number) => {
+    if (score >= 85) return "A";
+    if (score >= 80) return "A-";
+    if (score >= 75) return "B+";
+    if (score >= 65) return "B";
+    if (score >= 60) return "B-";
+    if (score >= 50) return "C";
+    if (score >= 40) return "D";
+    return "E"; // Default for scores < 40
+  };
 
   const visualizationScores = {
     presentation: assessmentData?.presentationScore || 0,
@@ -500,41 +360,34 @@ const AssessSeminarProposal = () => {
           lecturerNIP={user!.profile.nip!}
         />
 
-        <Card className="bg-white col-span-1 sm:col-span-2 lg:col-span-2 overflow-hidden">
-          <div className="relative bg-gradient-to-r from-primary-600 to-primary-800">
+        <Card className="bg-white col-span-1 sm:col-span-2 overflow-hidden">
+          <div className="relative bg-jewel-blue">
             <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
-
             <CardHeader className="relative z-10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
-                    Kriteria Penilaian
-                  </CardTitle>
-                  <CardDescription className="text-sm text-primary-foreground">
-                    Beri nilai pada skala 0-100 untuk setiap kriteria
-                  </CardDescription>
-                </div>
-              </div>
+              <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
+                Kriteria Penilaian
+              </CardTitle>
+              <CardDescription className="text-sm text-primary-foreground">
+                Beri nilai pada skala 0-100 untuk setiap kriteria
+              </CardDescription>
             </CardHeader>
           </div>
-          <CardContent className="p-6">
+          <CardContent className="px-6">
             {hasAssessed && !isEditing ? (
-              <div className="flex flex-col gap-6 py-6 min-h-[400px]">
-                <ScoreVisualization
+              <div className="flex flex-col min-h-[400px]">
+                <BarChartScoreVisualization
                   scores={visualizationScores}
                   isAdvisor={isAdvisor}
                 />
                 {daysRemaining !== null && (
-                  <>
-                    <Alert className="w-full">
-                      <AlertTitle>{canUpdate ? "Info" : "Warning"}</AlertTitle>
-                      <AlertDescription>
-                        {canUpdate
-                          ? `Anda masih bisa memperbarui nilai selama ${daysRemaining} hari lagi.`
-                          : "Masa pembaruan nilai telah berakhir (lebih dari 7 hari sejak penilaian disubmit)."}
-                      </AlertDescription>
-                    </Alert>
-                  </>
+                  <Alert className="w-full">
+                    <AlertTitle>{canUpdate ? "Info" : "Warning"}</AlertTitle>
+                    <AlertDescription>
+                      {canUpdate
+                        ? `Anda masih bisa memperbarui nilai selama ${daysRemaining} hari lagi.`
+                        : "Masa pembaruan nilai telah berakhir (lebih dari 7 hari sejak penilaian disubmit)."}
+                    </AlertDescription>
+                  </Alert>
                 )}
               </div>
             ) : (
@@ -551,7 +404,6 @@ const AssessSeminarProposal = () => {
                   }
                   disabled={isSubmitting}
                 />
-
                 <AssessmentCriterion
                   id="mastery-score"
                   icon={BrainCircuit}
@@ -562,7 +414,6 @@ const AssessSeminarProposal = () => {
                   onChange={(value) => handleScoreChange("masteryScore", value)}
                   disabled={isSubmitting}
                 />
-
                 {isAdvisor ? (
                   <AssessmentCriterion
                     id="characteristic-score"
@@ -594,115 +445,113 @@ const AssessSeminarProposal = () => {
             )}
           </CardContent>
         </Card>
-        <Card className="bg-white col-span-1 flex flex-col sm:col-span-2 lg:col-span-2 overflow-hidden">
-          <div className="relative bg-gradient-to-r from-emerald-600 to-primary">
+        <Card className="bg-white col-span-1 sm:col-span-2 overflow-hidden">
+          <div className="relative bg-jewel-green">
             <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
-
             <CardHeader className="relative z-10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
-                    Ringkasan Penilaian
-                  </CardTitle>
-                  <CardDescription className="text-sm text-primary-foreground">
-                    Hasil kalkulasi dari nilai yang diinputkan berdasarkan
-                    persentase
-                  </CardDescription>
-                </div>
-              </div>
+              <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
+                Ringkasan Penilaian
+              </CardTitle>
+              <CardDescription className="text-sm text-primary-foreground">
+                Hasil kalkulasi dari nilai yang diinputkan berdasarkan
+                persentase
+              </CardDescription>
             </CardHeader>
           </div>
           <CardContent className="p-6 flex-1 flex flex-col justify-between">
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground font-semibold text-lg">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-sm">
                   Penyajian Makalah / Presentasi (25%)
                 </span>
-                <div className="font-semibold text-lg">
+                <div className="font-semibold text-sm">
                   {weightedPresentation.toFixed(1)}
                 </div>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground font-semibold text-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground text-sm">
                   Penguasaan Materi (40%)
                 </span>
-                <div className="font-semibold text-lg">
+                <div className="font-semibold text-sm">
                   {weightedMastery.toFixed(1)}
                 </div>
               </div>
               {isAdvisor ? (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground font-semibold text-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">
                     Karakteristik Mahasiswa (35%)
                   </span>
-                  <div className="font-semibold text-lg">
+                  <div className="font-semibold text-sm">
                     {weightedCharacteristic.toFixed(1)}
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground font-semibold text-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">
                     Penulisan Makalah (35%)
                   </span>
-                  <div className="font-semibold text-lg">
+                  <div className="font-semibold text-sm">
                     {weightedWriting.toFixed(1)}
                   </div>
                 </div>
               )}
-              <div className="border-t border-dashed pt-2 mt-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-xl">Total Nilai</span>
-                  <span className={`${scoreColor} font-black text-xl`}>
-                    {formattedFinal}
-                  </span>
-                </div>
-              </div>
             </div>
-
-            <div className="flex flex-col items-center flex-1 justify-center mt-8">
+            <div className="flex flex-col items-center flex-1 justify-center mt-4">
               <p className="text-sm font-black uppercase tracking-wide mb-3">
                 Total Nilai
               </p>
-              <div className="relative flex items-center justify-center">
-                <div className="w-24 h-24 rounded-full bg-primary-50 flex items-center justify-center">
-                  <div className="text-xl font-heading font-black text-primary-800">
-                    {calculateAverage()}
+              <div className="flex flex-row items-center justify-center gap-4">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-primary-50 flex items-center justify-center">
+                    <div className="text-xl font-heading font-black text-primary-800">
+                      {formattedFinal}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-24 h-24 transform -rotate-90">
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="42"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="transparent"
+                        className="text-gray-200"
+                      />
+                      <circle
+                        cx="48"
+                        cy="48"
+                        r="42"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                        fill="transparent"
+                        strokeDasharray="263.89"
+                        strokeDashoffset={263.89 - (263.89 * finalScore) / 100}
+                        strokeLinecap="round"
+                        className={`${getScoreColor(
+                          finalScore
+                        )} transition-all duration-500`}
+                      />
+                    </svg>
                   </div>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <svg className="w-24 h-24 transform -rotate-90">
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="42"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="transparent"
-                      className="text-gray-200"
-                    />
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="42"
-                      stroke="currentColor"
-                      strokeWidth="6"
-                      fill="transparent"
-                      strokeDasharray="263.89"
-                      strokeDashoffset={
-                        263.89 - (263.89 * parseFloat(calculateAverage())) / 100
-                      }
-                      className="text-primary-600 transition-all duration-500"
-                    />
-                  </svg>
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`text-2xl font-heading font-black ${getScoreColor(
+                      finalScore
+                    )}`}
+                  >
+                    {getLetterGrade(finalScore)}
+                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
-          <div className="p-6">
+          <div className="p-6 pt-0">
             {hasAssessed && !isEditing ? (
               <Button
                 onClick={() => setIsEditing(true)}
-                className="bg-primary-600 text-white hover:bg-primary-700 w-full"
+                className="w-full"
                 disabled={!canUpdate}
               >
                 {canUpdate
@@ -713,7 +562,7 @@ const AssessSeminarProposal = () => {
               <div className="flex space-x-2">
                 <Button
                   variant="destructive"
-                  className="border-primary-400 text-primary-foreground w-[25%]"
+                  className="text-primary-foreground w-[25%]"
                   onClick={handleCancel}
                   disabled={isSubmitting}
                 >
@@ -721,7 +570,7 @@ const AssessSeminarProposal = () => {
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="bg-primary-600 text-white hover:bg-primary-700 w-[75%]"
+                  className="w-[75%]"
                   disabled={isSubmitting || isLoadingSubmit}
                 >
                   {isLoadingSubmit ? (

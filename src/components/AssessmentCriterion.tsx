@@ -30,9 +30,10 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-emerald-600";
-    if (score >= 80) return "text-blue-600";
-    if (score >= 70) return "text-amber-600";
+    if (score >= 90) return "text-jewel-green";
+    if (score >= 80) return "text-jewel-blue";
+    if (score >= 70) return "text-jewel-purple";
+    if (score >= 60) return "text-jewel-yellow";
     return "text-red-600";
   };
 
@@ -46,16 +47,16 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 mb-4 pb-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
             <Icon className="h-4 w-4 text-emerald-600" />
           </div>
           <div>
-            <Label htmlFor={id} className="text-base font-medium">
+            <Label htmlFor={id} className="md:text-sm text-xs font-medium">
               {title}{" "}
-              <span className="text-muted-foreground font-normal">
+              <span className="text-muted-foreground md:text-sm text-xs font-normal">
                 ({weight}%)
               </span>
             </Label>
@@ -63,7 +64,7 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
         </div>
         <div className="flex items-center gap-2">
           {value && (
-            <span className={`text-sm font-medium ${getScoreColor(numValue)}`}>
+            <span className={`text-xs font-medium ${getScoreColor(numValue)}`}>
               {getScoreLabel(numValue)}
             </span>
           )}
@@ -74,12 +75,14 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
             max={100}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-16 text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="w-14 text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none h-8"
             disabled={disabled}
           />
         </div>
       </div>
-      <p className="text-sm text-primary-800 w-3/4">{description}</p>
+      <p className="md:text-sm text-xs text-muted-foreground w-3/4">
+        {description}
+      </p>
       <div className="relative pt-1">
         <Slider
           defaultValue={[0]}

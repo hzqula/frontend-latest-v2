@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Search, ArrowUpDown } from "lucide-react";
@@ -20,11 +21,12 @@ import {
 } from "@/components/ui/select";
 
 const Announcement = () => {
-  const { token, logout } = useAuth();
+  const { token, userRole, logout, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [announcements, setAnnouncements] = useState<AnnouncementProps[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedAnnouncement, setSelectedAnnouncement] =
-    useState<AnnouncementProps | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementProps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,26 +42,32 @@ const Announcement = () => {
   const fetchAnnouncements = useCallback(async () => {
     if (!token) {
       setError("Token tidak ditemukan. Silakan login kembali.");
+      console.log("No token available for fetching announcements");
       logout();
       return;
     }
 
     try {
       setIsLoading(true);
+      console.log("Fetching announcements with token:", token);
       const response = await apiClient.get("/announcements");
 
       if (response.data.success) {
         setAnnouncements(response.data.announcements);
         setError(null);
+        console.log("Announcements fetched successfully:", response.data.announcements);
       } else {
         setError(response.data.message || "Gagal mengambil pengumuman");
+        console.log("Failed to fetch announcements:", response.data.message);
       }
     } catch (err: any) {
       if (err.response?.status === 401 || err.response?.status === 403) {
         setError("Sesi tidak valid. Silakan login kembali.");
+        console.log("Unauthorized or forbidden, logging out");
         logout();
       } else {
         setError("Terjadi kesalahan saat mengambil data pengumuman");
+        console.log("Error fetching announcements:", err);
       }
     } finally {
       setIsLoading(false);
@@ -67,8 +75,35 @@ const Announcement = () => {
   }, [token, logout]);
 
   useEffect(() => {
+    if (authLoading) {
+      setIsLoading(true);
+      console.log("Auth is loading, waiting for completion");
+      return;
+    }
+
+    if (!token) {
+      console.log("Redirecting to login from Announcement - token is null");
+      setError("Token tidak ditemukan. Silakan login kembali.");
+      navigate("/login");
+      return;
+    }
+
+    if (!userRole) {
+      console.log("Redirecting to login from Announcement - userRole is null");
+      setError("Role pengguna tidak ditemukan. Silakan login kembali.");
+      navigate("/login");
+      return;
+    }
+
+    if (userRole !== "COORDINATOR") {
+      console.log("Redirecting to login from Announcement - unauthorized role:", userRole);
+      setError("Access denied: You do not have permission to access this page.");
+      navigate("/login");
+      return;
+    }
+
     fetchAnnouncements();
-  }, [fetchAnnouncements]);
+  }, [authLoading, token, userRole, navigate, fetchAnnouncements]);
 
   const handleAnnouncementCreated = () => {
     setIsCreateModalOpen(false);
@@ -85,7 +120,6 @@ const Announcement = () => {
     fetchAnnouncements();
   };
 
-  // Sorting logic
   const requestSort = () => {
     let direction: "ascending" | "descending" | null = "ascending";
     if (sortConfig.key === "createdAt") {
@@ -98,7 +132,6 @@ const Announcement = () => {
     setSortConfig({ key: "createdAt", direction });
   };
 
-  // Get unique visibility options
   const visibilityOptions = useMemo(() => {
     const options = new Set<string>();
     announcements.forEach((announcement) => {
@@ -107,25 +140,21 @@ const Announcement = () => {
     return ["all", ...Array.from(options).sort()];
   }, [announcements]);
 
-  // Filter and sort announcements
   const filteredAndSortedAnnouncements = useMemo(() => {
     let result = [...announcements];
 
-    // Apply search filter
     if (searchQuery) {
       result = result.filter((announcement) =>
         announcement.title.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply visibility filter
     if (visibilityFilter !== "all") {
       result = result.filter((announcement) =>
         announcement.visibility.includes(visibilityFilter)
       );
     }
 
-    // Apply sorting
     if (sortConfig.key === "createdAt" && sortConfig.direction) {
       result.sort((a, b) => {
         const aValue = new Date(a.createdAt).getTime();
@@ -143,15 +172,24 @@ const Announcement = () => {
     return result;
   }, [announcements, searchQuery, visibilityFilter, sortConfig]);
 
+  if (authLoading) {
+    return (
+      <CoordinatorLayout>
+        <div className="flex justify-center items-center h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </CoordinatorLayout>
+    );
+  }
+
   return (
     <CoordinatorLayout>
       <div className="flex flex-col mb-4">
-        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
-          Pengumuman
-        </h1>
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">Pengumuman</h1>
         <p className="text-primary md:text-base text-sm">
           Di sini tempat Anda menambah, memperbarui, dan menghapus pengumuman
         </p>
+
         <div className="relative md:hidden mt-4 mb-2">
           <Search className="absolute left-2.5 top-1/4 h-4 w-4 text-primary-600" />
           <Input
@@ -162,6 +200,7 @@ const Announcement = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
         <div className="flex gap-4 items-center mb-4 justify-between mt-4">
           <div className="relative flex-2 hidden md:block">
             <Search className="absolute left-2.5 top-1/4 h-4 w-4 text-primary-600" />
@@ -173,6 +212,7 @@ const Announcement = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
           <Button
             variant="outline"
             className="text-xs sm:text-sm border-primary-400 text-primary-800"
@@ -181,22 +221,20 @@ const Announcement = () => {
             Urutkan Tanggal
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
+
           <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
             <SelectTrigger className="w-[180px] bg-background text-xs sm:text-sm border-primary-400">
               <SelectValue placeholder="Filter visibilitas" />
             </SelectTrigger>
             <SelectContent>
               {visibilityOptions.map((option) => (
-                <SelectItem
-                  key={option}
-                  value={option}
-                  className="text-xs sm:text-sm"
-                >
+                <SelectItem key={option} value={option} className="text-xs sm:text-sm">
                   {option === "all" ? "Semua Visibilitas" : option}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
           <Button
             className="bg-env-base text-primary-foreground text-xs sm:text-sm"
             onClick={() => setIsCreateModalOpen(true)}

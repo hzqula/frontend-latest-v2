@@ -222,12 +222,12 @@ const Login: React.FC = () => {
 
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Password</Label>
+                      <Label htmlFor="password">Kata Sandi</Label>
                       <Link
                         to="/forgot-password"
-                        className="text-xs md:text-sm text-primary hover:underline"
+                        className="text-xs md:text-xs text-primary hover:underline"
                       >
-                        Forgot password?
+                        Lupa kata sandi?
                       </Link>
                     </div>
                     <div className="relative">

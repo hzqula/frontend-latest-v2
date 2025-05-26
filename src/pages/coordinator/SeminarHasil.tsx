@@ -207,7 +207,9 @@ const CoordinatorSeminarHasil = () => {
               </div>
             </div>
           ) : (
-            <p className="text-sm">Tidak ada seminar yang belum dijadwalkan.</p>
+            <p className="text-sm text-primary-foreground">
+              Tidak ada seminar yang belum dijadwalkan.
+            </p>
           )}
         </Card>
 

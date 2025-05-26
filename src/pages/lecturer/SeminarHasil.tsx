@@ -194,7 +194,7 @@ const LecturerSeminarHasil = () => {
   };
 
   const handleAssessNavigation = (seminarId: number) => {
-    navigate(`/seminar-proposal/assess/${seminarId}`, {
+    navigate(`/seminar-hasil/penilaian/${seminarId}`, {
       state: { fromAssessment: true },
     });
   };

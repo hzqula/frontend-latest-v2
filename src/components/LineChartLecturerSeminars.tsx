@@ -202,7 +202,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
             type="monotone"
             dataKey="proposal"
             name="Seminar Proposal"
-            stroke="#1e40af" // jewel-blue
+            stroke="#064359" // jewel-blue
             strokeWidth={1.5}
             activeDot={{ r: 8 }}
           />
@@ -210,7 +210,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
             type="monotone"
             dataKey="result"
             name="Seminar Hasil"
-            stroke="#15803d" // jewel-green
+            stroke="#055a39" // jewel-green
             strokeWidth={1.5}
             activeDot={{ r: 8 }}
           />

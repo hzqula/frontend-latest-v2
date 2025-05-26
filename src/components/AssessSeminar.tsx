@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApiData } from "@/hooks/useApiData";
 import axios from "axios";
@@ -25,10 +25,16 @@ import { Seminar } from "@/configs/types";
 import SeminarDetail from "@/components/SeminarDetail";
 import BarChartScoreVisualization from "./BarChartScoreVisualization";
 
-const AssessSeminarProposal = () => {
+interface AssessSeminarProps {
+  seminarType?: "PROPOSAL" | "HASIL";
+}
+
+const AssessSeminar: React.FC<AssessSeminarProps> = () => {
   const { seminarId } = useParams<{ seminarId: string }>();
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const seminarType = state?.seminarType || "PROPOSAL";
 
   const seminarQuery = useApiData({
     type: "seminarById",
@@ -51,25 +57,21 @@ const AssessSeminarProposal = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
 
-  // Fungsi untuk menunda eksekusi menggunakan Promise
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Cek apakah user dan nip sudah dimuat
   useEffect(() => {
     if (user !== null && user.profile?.nip) {
       setIsLoadingUser(false);
     }
   }, [user]);
 
-  // Navigasi ke login jika user tidak valid
   useEffect(() => {
     if (!isLoadingUser && (!user || !token || !user.profile?.nip)) {
       navigate("/login");
     }
   }, [isLoadingUser, user, token, navigate]);
 
-  // Reset state saat seminarId berubah
   useEffect(() => {
     setIsAdvisor(false);
     setScores({
@@ -89,7 +91,6 @@ const AssessSeminarProposal = () => {
     }
   }, [seminarId, seminarQuery.refetch]);
 
-  // Update state berdasarkan data seminar yang baru
   useEffect(() => {
     if (seminarQuery.data && user?.profile?.nip) {
       const seminar: Seminar = seminarQuery.data;
@@ -203,21 +204,24 @@ const AssessSeminarProposal = () => {
         payload.writingScore = parseFloat(scores.writingScore);
       }
 
+      const endpoint =
+        seminarType === "PROPOSAL"
+          ? `http://localhost:5500/api/seminars/proposal/${seminarId}/assess`
+          : `http://localhost:5500/api/seminars/result/${seminarId}/assess`;
+
       const method = hasAssessed ? "put" : "post";
       await axios({
         method,
-        url: `http://localhost:5500/api/seminars/proposal/${seminarId}/assess`,
+        url: endpoint,
         data: payload,
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      await seminarQuery.refetch(); // Refetch data setelah API selesai
+      await seminarQuery.refetch();
 
-      // Hitung waktu yang sudah berlalu
       const elapsedTime = Date.now() - startTime;
       const remainingTime = minLoadingTime - elapsedTime;
 
-      // Jika waktu yang sudah berlalu kurang dari 2 detik, tunggu sisa waktu
       if (remainingTime > 0) {
         await delay(remainingTime);
       }
@@ -236,7 +240,6 @@ const AssessSeminarProposal = () => {
       toast.error(message);
       console.error(error);
 
-      // Pastikan animasi loading tetap muncul setidaknya 2 detik meskipun ada error
       const elapsedTime = Date.now() - startTime;
       const remainingTime = minLoadingTime - elapsedTime;
       if (remainingTime > 0) {
@@ -301,7 +304,7 @@ const AssessSeminarProposal = () => {
     if (score >= 60) return "B-";
     if (score >= 50) return "C";
     if (score >= 40) return "D";
-    return "E"; // Default for scores < 40
+    return "E";
   };
 
   const visualizationScores = {
@@ -349,10 +352,12 @@ const AssessSeminarProposal = () => {
     <LecturerLayout>
       <div className="flex flex-col mb-4">
         <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
-          Penilaian Seminar Proposal
+          Penilaian Seminar {seminarType === "PROPOSAL" ? "Proposal" : "Hasil"}
         </h1>
         <p className="text-primary md:text-base text-sm">
-          Silakan beri penilaian pada seminar proposal mahasiswa di bawah ini.
+          Silakan beri penilaian pada seminar{" "}
+          {seminarType === "PROPOSAL" ? "proposal" : "hasil"} mahasiswa di bawah
+          ini.
         </p>
       </div>
 
@@ -617,4 +622,4 @@ const AssessSeminarProposal = () => {
   );
 };
 
-export default AssessSeminarProposal;
+export default AssessSeminar;

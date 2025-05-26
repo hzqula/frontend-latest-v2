@@ -23,7 +23,7 @@ import UpdateProfile from "@/pages/student/UpdateProfile";
 export const publicRoutes: RouteObject[] = [
   { path: "/", element: <Landing /> },
   // { path: "/galeri", element: <Galeri /> },
-  // { path: "/panduan/format-penulisan-ta", element: <FormatPenulisanTA /> },
+  // { path: "/panduan/format-penulisan-ta", element: <FormatPenulisanTA /> },pu
   // { path: "/panduan/sop", element: <SOP /> },
   // { path: "/kalender-akademik", element: <KalenderAkademik /> },
   { path: "/login", element: <Login /> },

@@ -4,13 +4,13 @@ import {
   CardHeader,
   CardContent,
   CardTitle,
-} from "../../../frontend-latest/src/components/ui/card";
-import { Badge } from "../../../frontend-latest/src/components/ui/badge";
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "../../../frontend-latest/src/components/ui/avatar";
+} from "@/components/ui/avatar";
 import { Seminar } from "@/configs/types";
 
 interface SeminarDetailProps {

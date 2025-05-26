@@ -8,12 +8,14 @@ import {
   LogOutIcon,
   BookOpenText,
   BookText,
+  Edit2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router";
 import Breadcrumb from "@/components/Breadcrumb";
 import logo from "@/assets/img/logo-tl.png";
 import { Button } from "@/components/ui/button";
+import ModalEditProfile from "../ModalEditProfile";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -77,6 +79,7 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Check if screen is mobile and handle resize
   useEffect(() => {
@@ -202,6 +205,27 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
         <div className="border-t border-primary-800 p-3">
           {isSidebarExpanded ? (
             <Button
+              variant="default"
+              onClick={() => setIsEditModalOpen(true)} // Trigger modal
+              className="w-full bg-env-darker"
+            >
+              Profile
+              <Edit2 className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <button
+              onClick={() => setIsEditModalOpen(true)} // Trigger modal
+              className="w-full flex justify-center items-center p-2 rounded-md text-primary-600 hover:bg-primary-50 transition-colors"
+              title="Edit Profil"
+            >
+              <Edit2 className="h-4 w-4" />
+              <span className="sr-only">Edit Profil</span>
+            </button>
+          )}
+        </div>
+        <div className="border-t border-primary-800 p-3">
+          {isSidebarExpanded ? (
+            <Button
               variant="destructive"
               onClick={handleLogout}
               className="w-full"
@@ -260,6 +284,11 @@ const LecturerLayout: React.FC<LecturerLayoutProps> = ({ children }) => {
 
         <main className="flex-1 p-4 overflow-y-auto">{children}</main>
       </div>
+
+      <ModalEditProfile
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+      />
     </div>
   );
 };

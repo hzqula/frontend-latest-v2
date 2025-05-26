@@ -48,7 +48,7 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
 
   return (
     <div className="space-y-2 mb-4 pb-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
             <Icon className="h-4 w-4 text-emerald-600" />
@@ -62,7 +62,7 @@ const AssessmentCriterion: React.FC<AssessmentCriterionProps> = ({
             </Label>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end ">
           {value && (
             <span className={`text-xs font-medium ${getScoreColor(numValue)}`}>
               {getScoreLabel(numValue)}

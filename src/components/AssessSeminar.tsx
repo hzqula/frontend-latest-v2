@@ -347,9 +347,14 @@ const AssessSeminarProposal = () => {
 
   return (
     <LecturerLayout>
-      <h1 className="text-4xl font-heading font-black mb-3 text-primary-800">
-        Penilaian Seminar Proposal
-      </h1>
+      <div className="flex flex-col mb-4">
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
+          Penilaian Seminar Proposal
+        </h1>
+        <p className="text-primary md:text-base text-sm">
+          Silakan beri penilaian pada seminar proposal mahasiswa di bawah ini.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <SeminarDetail
@@ -364,17 +369,17 @@ const AssessSeminarProposal = () => {
           <div className="relative bg-jewel-blue">
             <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
             <CardHeader className="relative z-10">
-              <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
+              <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
                 Kriteria Penilaian
               </CardTitle>
-              <CardDescription className="text-sm text-primary-foreground">
+              <CardDescription className="text-primary-foreground text-xs md:text-sm">
                 Beri nilai pada skala 0-100 untuk setiap kriteria
               </CardDescription>
             </CardHeader>
           </div>
-          <CardContent className="px-6">
+          <CardContent className={`px-6 ${hasAssessed ? "pb-6" : "pb-0"}`}>
             {hasAssessed && !isEditing ? (
-              <div className="flex flex-col min-h-[400px]">
+              <div className="flex flex-col">
                 <BarChartScoreVisualization
                   scores={visualizationScores}
                   isAdvisor={isAdvisor}
@@ -449,10 +454,10 @@ const AssessSeminarProposal = () => {
           <div className="relative bg-jewel-green">
             <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
             <CardHeader className="relative z-10">
-              <CardTitle className="text-2xl font-heading font-black text-primary-foreground">
+              <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
                 Ringkasan Penilaian
               </CardTitle>
-              <CardDescription className="text-sm text-primary-foreground">
+              <CardDescription className="text-primary-foreground text-xs md:text-sm">
                 Hasil kalkulasi dari nilai yang diinputkan berdasarkan
                 persentase
               </CardDescription>

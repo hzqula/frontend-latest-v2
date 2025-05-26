@@ -70,13 +70,15 @@ const BarChartScoreVisualization: React.FC<ScoreVisualizationProps> = ({
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-background border border-env-light rounded-lg shadow-md p-3 max-w-1/2">
-          <p className="text-sm font-semibold text-env-darker">{label}</p>
-          <p className="text-sm text-muted-foreground">
+        <div className="bg-background border border-env-light rounded-lg shadow-md p-2 sm:p-3 max-w-[80vw] sm:max-w-xs">
+          <p className="text-xs sm:text-sm font-semibold text-env-darker line-clamp-2">
+            {label}
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Nilai: {data.score}/100
           </p>
           {data.description && (
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-3">
               {data.description}
             </p>
           )}
@@ -87,34 +89,39 @@ const BarChartScoreVisualization: React.FC<ScoreVisualizationProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="h-[300px]">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="h-[200px] sm:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
             data={data}
-            margin={{ top: 20, right: 30, left: -10, bottom: 5 }}
+            margin={{ top: 10, right: 20, left: -20, bottom: 5 }}
+            className="text-xs sm:text-sm"
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
               type="number"
               domain={[0, 100]}
-              tick={{ fontSize: 12, fill: "#64748b" }}
+              tick={{ fontSize: 10, fill: "#64748b" }}
+              tickCount={6}
             />
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fontSize: 12, fill: "#334155" }}
-              width={150}
+              tick={{ fontSize: 10, fill: "#334155" }}
+              width={100}
+              tickFormatter={(value: string) =>
+                value.length > 15 ? `${value.substring(0, 15)}...` : value
+              }
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar
               dataKey="score"
               radius={[0, 4, 4, 0]}
-              barSize={20}
+              barSize={15}
               fill="#064359"
               stroke="#a0ced9"
-              strokeWidth={2}
+              strokeWidth={1}
             >
               {data.map((entry, index) => (
                 <Bar

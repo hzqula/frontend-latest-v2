@@ -11,12 +11,12 @@ import Register from "../pages/auth/Register";
 import SeminarProposal from "@/pages/redirect/SeminarProposal";
 import Dashboard from "@/pages/redirect/Dashboard";
 import SeminarHasil from "@/pages/redirect/SeminarHasil";
-import AssessSeminarProposal from "@/components/AssessSeminar";
 import Landing from "@/pages/landing/Landing";
 import SecurityLog from "@/pages/coordinator/SecurityLog";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import Announcement from "@/pages/coordinator/Announcement";
 import UpdateProfile from "@/pages/student/UpdateProfile";
+import AssessSeminar from "@/components/AssessSeminar";
 // import SeminarProposal from "../pages/redirect/SeminarProposal";
 // import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
 
@@ -49,8 +49,12 @@ export const privateRoutes: RouteObject[] = [
     element: <SecurityLog />,
   },
   {
-    path: "/seminar-proposal/assess/:seminarId",
-    element: <AssessSeminarProposal />,
+    path: "/seminar-proposal/penilaian/:seminarId",
+    element: <AssessSeminar />,
+  },
+  {
+    path: "/seminar-hasil/penilaian/:seminarId",
+    element: <AssessSeminar />,
   },
   {
     path: "/pengumuman",

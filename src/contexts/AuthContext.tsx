@@ -29,6 +29,7 @@ interface AuthContextType {
   login: (token: string, user: User) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  updateUser: (updatedUser: Partial<User>) => void; // Tambahkan fungsi ini
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,9 +63,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const verifyRole = async (token: string) => {
-    setIsLoading(true); // Pastikan isLoading true saat memulai verifikasi
+    setIsLoading(true);
     try {
-      console.log("Verifying role with token:", token); // Debugging
+      console.log("Verifying role with token:", token);
       const response = await axios.get(
         "http://localhost:5500/api/auth/verify-role",
         {
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       console.error("Terjadi kesalahan saat memverifikasi role", error);
       logout();
     } finally {
-      setIsLoading(false); // Set isLoading ke false setelah verifikasi selesai
+      setIsLoading(false);
     }
   };
 
@@ -87,8 +88,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser(newUser);
     localStorage.setItem("token", newToken);
     localStorage.setItem("userData", JSON.stringify(newUser));
-    await verifyRole(newToken); // Tunggu verifikasi selesai
-    console.log("Login and role verification completed"); // Debugging
+    await verifyRole(newToken);
+    console.log("Login and role verification completed");
   };
 
   const logout = () => {
@@ -102,9 +103,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     navigate("/login");
   };
 
+  const updateUser = (updatedUser: Partial<User>) => {
+    setUser((prevUser) => {
+      const newUser = prevUser ? { ...prevUser, ...updatedUser } : null;
+      if (newUser) {
+        localStorage.setItem("userData", JSON.stringify(newUser)); // Sinkronisasi dengan localStorage
+      }
+      return newUser;
+    });
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, token, userRole, login, logout, isLoading }}
+      value={{ user, token, userRole, login, logout, isLoading, updateUser }}
     >
       {children}
     </AuthContext.Provider>

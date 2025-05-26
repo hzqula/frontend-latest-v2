@@ -265,7 +265,7 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
                   : `https://robohash.org/${user.profile.name}`
               }
               alt="profile"
-              className="rounded-full size-12 object-cover border border-primary-800"
+              className="rounded-full size-10 md:size-12 object-cover border border-primary-800"
             />
           </div>
         </header>

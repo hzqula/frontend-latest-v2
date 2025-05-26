@@ -52,7 +52,7 @@ const ModalDetailAnnouncement = ({
             <img
               src={announcement.image}
               alt={announcement.title}
-              className="w-full max-h-96 object-cover rounded-md"
+              className="w-full object-cover rounded-md"
             />
           )}
           <div>

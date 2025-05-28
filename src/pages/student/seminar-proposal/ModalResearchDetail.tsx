@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { cn } from "@/lib/utils"; // Pastikan Anda mengimpor cn jika digunakan
+import { cn } from "@/lib/utils";
 import { useApiData } from "@/hooks/useApiData";
 import {
   Dialog,
@@ -22,9 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus, Check, ChevronsUpDown } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea"; // Impor Textarea dari Shadcn
+import { Plus, Minus, Check, ChevronsUpDown, Loader2 } from "lucide-react"; // Tambahkan Loader2
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -51,7 +51,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-interface ResearchDetailsModalProps {
+interface ModalResearchDetailProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: FormData) => void;
@@ -62,12 +62,12 @@ interface ResearchDetailsModalProps {
   };
 }
 
-const ResearchDetailsModal = ({
+const ModalResearchDetail = ({
   open,
   onOpenChange,
   onSubmit,
   initialData,
-}: ResearchDetailsModalProps) => {
+}: ModalResearchDetailProps) => {
   const [showSecondSupervisor, setShowSecondSupervisor] = useState<boolean>(
     !!initialData.advisor2
   );
@@ -77,7 +77,7 @@ const ResearchDetailsModal = ({
   const lecturersQuery = useApiData({ type: "lecturers" });
   const availableSupervisors = lecturersQuery.data || [];
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State untuk loading
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -89,16 +89,19 @@ const ResearchDetailsModal = ({
   });
 
   const handleSubmit = async (data: FormData) => {
-    if (isSubmitting) return;
+    if (isSubmitting) return; // Mencegah pengiriman berulang
 
-    setIsSubmitting(true);
+    setIsSubmitting(true); // Aktifkan loading
     try {
+      // Simulasi delay 2 detik
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       await onSubmit(data);
       onOpenChange(false);
     } catch (error) {
       toast.error("Gagal menyimpan detail seminar.");
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Matikan loading setelah selesai
     }
   };
 
@@ -135,9 +138,10 @@ const ResearchDetailsModal = ({
                     Judul Penelitian
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      className="text-xs md:text-sm md:placeholder:text-sm placeholder:text-xs"
+                    <Textarea
+                      className="text-xs md:text-sm md:placeholder:text-sm placeholder:text-xs resize-y"
                       placeholder="Masukkan judul penelitian Anda"
+                      rows={3} // Atur tinggi awal Textarea
                       {...field}
                     />
                   </FormControl>
@@ -153,7 +157,7 @@ const ResearchDetailsModal = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-medium text-sm -mb-1 md:mb-0 block text-env-darker">
-                      Dosen Pembimbing I
+                      Dosen Pembimbing 1
                     </FormLabel>
                     <Popover open={advisor1Open} onOpenChange={setAdvisor1Open}>
                       <PopoverTrigger asChild>
@@ -172,8 +176,8 @@ const ResearchDetailsModal = ({
                                 ? availableSupervisors.find(
                                     (advisor: { nip: string }) =>
                                       advisor.nip === field.value
-                                  )?.name
-                                : "Pilih Dosen Pembimbing 2"}
+                                  )?.name || "Tidak ditemukan"
+                                : "Pilih Dosen Pembimbing 1"}
                             </span>
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
@@ -195,58 +199,69 @@ const ResearchDetailsModal = ({
                                   nip: string;
                                   name: string;
                                   profilePicture?: string;
-                                }) => (
-                                  <CommandItem
-                                    key={supervisor.nip}
-                                    value={`${supervisor.name} ${supervisor.nip}`}
-                                    onSelect={(selectedValue) => {
-                                      form.setValue(
-                                        "advisor1",
-                                        selectedValue === field.value
-                                          ? ""
-                                          : supervisor.nip
-                                      );
-                                      setAdvisor1Open(false);
-                                    }}
-                                    className="cursor-pointer pointer-events-auto"
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <Avatar className="h-6 w-6 md:h-7 md:w-7">
-                                        <AvatarImage
-                                          src={
-                                            supervisor.profilePicture
-                                              ? supervisor.profilePicture
-                                              : `https://robohash.org/${supervisor.name}`
-                                          }
-                                          alt="advisor-image"
-                                          className="rounded-full"
-                                        />
-                                        <AvatarFallback className="bg-pastel-yellow text-jewel-yellow">
-                                          {supervisor.name
-                                            .split(" ")
-                                            .map((n) => n[0])
-                                            .join("")}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div className="flex flex-col">
-                                        <div className="text-xs -mb-0.5 md:text-sm font-medium text-env-darker">
-                                          {supervisor.name}
-                                        </div>
-                                        <div className="text-xs text-left text-muted-foreground">
-                                          {supervisor.nip}
+                                }) => {
+                                  const isSelectedAsAdvisor2 =
+                                    supervisor.nip === form.watch("advisor2");
+                                  return (
+                                    <CommandItem
+                                      key={supervisor.nip}
+                                      value={`${supervisor.name} ${supervisor.nip}`}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          "advisor1",
+                                          supervisor.nip
+                                        );
+                                        setAdvisor1Open(false);
+                                      }}
+                                      disabled={isSelectedAsAdvisor2}
+                                      className={cn(
+                                        "cursor-pointer pointer-events-auto",
+                                        isSelectedAsAdvisor2 && "opacity-50"
+                                      )}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Avatar className="h-6 w-6 md:h-7 md:w-7">
+                                          <AvatarImage
+                                            src={
+                                              supervisor.profilePicture
+                                                ? supervisor.profilePicture
+                                                : `https://robohash.org/${supervisor.name}`
+                                            }
+                                            alt="advisor-image"
+                                            className="rounded-full"
+                                          />
+                                          <AvatarFallback className="bg-pastel-yellow text-jewel-yellow">
+                                            {supervisor.name
+                                              .split(" ")
+                                              .map((n) => n[0])
+                                              .join("")}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col">
+                                          <div className="text-xs -mb-0.5 md:text-sm font-medium text-env-darker">
+                                            {supervisor.name}
+                                            {isSelectedAsAdvisor2 && (
+                                              <span className="ml-2 text-xs text-primary-600">
+                                                (Pembimbing 2)
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="text-xs text-left text-muted-foreground">
+                                            {supervisor.nip}
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                    <Check
-                                      className={cn(
-                                        "ml-auto h-4 w-4 flex-shrink-0",
-                                        field.value === supervisor.nip
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                  </CommandItem>
-                                )
+                                      <Check
+                                        className={cn(
+                                          "ml-auto h-4 w-4 flex-shrink-0",
+                                          field.value === supervisor.nip
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  );
+                                }
                               )}
                             </CommandGroup>
                           </CommandList>
@@ -265,7 +280,7 @@ const ResearchDetailsModal = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-medium text-sm -mb-1 md:mb-0 block text-env-darker">
-                        Dosen Pembimbing II
+                        Dosen Pembimbing 2
                       </FormLabel>
                       <Popover
                         open={advisor2Open}
@@ -282,13 +297,13 @@ const ResearchDetailsModal = ({
                                 !field.value && "text-muted-foreground"
                               )}
                             >
-                              <span className="truncate">
+                              <span className="truncate md:text-sm text-xs">
                                 {field.value
                                   ? availableSupervisors.find(
                                       (supervisor: { nip: string }) =>
                                         supervisor.nip === field.value
-                                    )?.name
-                                  : "Pilih Dosen Pembimbing 1"}
+                                    )?.name || "Tidak ditemukan"
+                                  : "Pilih Dosen Pembimbing 2"}
                               </span>
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -305,31 +320,30 @@ const ResearchDetailsModal = ({
                                 Tidak ada dosen ditemukan.
                               </CommandEmpty>
                               <CommandGroup>
-                                {availableSupervisors
-                                  .filter(
-                                    (supervisor: { nip: string }) =>
-                                      supervisor.nip !==
-                                      form.getValues("advisor1")
-                                  )
-                                  .map(
-                                    (supervisor: {
-                                      nip: string;
-                                      name: string;
-                                      profilePicture?: string;
-                                    }) => (
+                                {availableSupervisors.map(
+                                  (supervisor: {
+                                    nip: string;
+                                    name: string;
+                                    profilePicture?: string;
+                                  }) => {
+                                    const isSelectedAsAdvisor1 =
+                                      supervisor.nip === form.watch("advisor1");
+                                    return (
                                       <CommandItem
                                         key={supervisor.nip}
                                         value={`${supervisor.name} ${supervisor.nip}`}
-                                        onSelect={(selectedValue) => {
+                                        onSelect={() => {
                                           form.setValue(
                                             "advisor2",
-                                            selectedValue === field.value
-                                              ? ""
-                                              : supervisor.nip
+                                            supervisor.nip
                                           );
                                           setAdvisor2Open(false);
                                         }}
-                                        className="cursor-pointer pointer-events-auto"
+                                        disabled={isSelectedAsAdvisor1}
+                                        className={cn(
+                                          "cursor-pointer pointer-events-auto",
+                                          isSelectedAsAdvisor1 && "opacity-50"
+                                        )}
                                       >
                                         <div className="flex items-center gap-2">
                                           <Avatar className="h-6 w-6 md:h-7 md:w-7">
@@ -352,6 +366,11 @@ const ResearchDetailsModal = ({
                                           <div className="flex flex-col">
                                             <div className="text-xs -mb-0.5 md:text-sm font-medium text-env-darker">
                                               {supervisor.name}
+                                              {isSelectedAsAdvisor1 && (
+                                                <span className="ml-2 text-xs text-primary-600">
+                                                  (Pembimbing 1)
+                                                </span>
+                                              )}
                                             </div>
                                             <div className="text-xs text-left text-muted-foreground">
                                               {supervisor.nip}
@@ -367,8 +386,9 @@ const ResearchDetailsModal = ({
                                           )}
                                         />
                                       </CommandItem>
-                                    )
-                                  )}
+                                    );
+                                  }
+                                )}
                               </CommandGroup>
                             </CommandList>
                           </Command>
@@ -412,7 +432,14 @@ const ResearchDetailsModal = ({
                   type="submit"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Menyimpan..." : "Simpan"}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
                 </Button>
               </div>
             </DialogFooter>
@@ -423,4 +450,4 @@ const ResearchDetailsModal = ({
   );
 };
 
-export default ResearchDetailsModal;
+export default ModalResearchDetail;

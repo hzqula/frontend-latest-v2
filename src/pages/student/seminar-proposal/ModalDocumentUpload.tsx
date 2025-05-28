@@ -49,7 +49,7 @@ const requiredDocuments = [
   },
 ];
 
-interface DocumentUploadModalProps {
+interface ModalDocumentUploadProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (documents: Record<string, File | null>) => void;
@@ -57,13 +57,13 @@ interface DocumentUploadModalProps {
   uploadedStatus: Record<string, boolean>;
 }
 
-const DocumentUploadModal = ({
+const ModalDocumentUpload = ({
   open,
   onOpenChange,
   onSubmit,
   initialData,
   uploadedStatus,
-}: DocumentUploadModalProps) => {
+}: ModalDocumentUploadProps) => {
   const [uploadedDocuments, setUploadedDocuments] =
     useState<Record<string, File | null>>(initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,4 +208,4 @@ const DocumentUploadModal = ({
   );
 };
 
-export default DocumentUploadModal;
+export default ModalDocumentUpload;

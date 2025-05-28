@@ -3,7 +3,15 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-import { ArrowUpDown, Calendar, User, MapPin, Info, Edit } from "lucide-react";
+import {
+  ArrowUpDown,
+  Calendar,
+  User,
+  MapPin,
+  Info,
+  Edit,
+  CalendarFold,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -178,28 +186,13 @@ const TableSeminarsScheduled = ({
                         <Info size={12} className="mr-1" />
                         Lihat
                       </Button>
+
                       <Button
                         size="sm"
                         className="bg-env-base"
-                        onClick={() => {
-                          if (seminar.folderId) {
-                            window.open(
-                              `https://drive.google.com/drive/u/4/folders/${seminar.folderId}`,
-                              "_blank"
-                            );
-                          } else {
-                            toast.error("Link Google Drive tidak tersedia.");
-                          }
-                        }}
-                      >
-                        Folder
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => onReschedule(seminar)}
                       >
-                        <Edit size={12} className="mr-1" />
+                        <CalendarFold size={12} className="mr-1" />
                         Reschedule
                       </Button>
                     </TableCell>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Calendar, Info, User } from "lucide-react";
+import { ArrowUpDown, Calendar, CalendarRange, Info, User } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -170,6 +170,7 @@ const TableSeminarsSubmitted = ({
                         size="sm"
                         onClick={() => onViewDetails(seminar)}
                       >
+                        <Info size={12} className="mr-1" />
                         Lihat
                       </Button>
                       <Button
@@ -177,6 +178,7 @@ const TableSeminarsSubmitted = ({
                         className="bg-env-base"
                         onClick={() => onSchedule(seminar)}
                       >
+                        <CalendarRange size={12} className="mr-1" />
                         Jadwalkan
                       </Button>
                     </TableCell>

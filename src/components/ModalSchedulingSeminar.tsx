@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; // Tambahkan useEffect
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,7 +37,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Lecturer, Seminar } from "@/configs/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
@@ -87,6 +87,7 @@ const ModalSchedulingSeminar = ({
   const [assessor2Open, setAssessor2Open] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<Date | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Tambahkan state untuk loading
 
   // Reset form dan state saat modal dibuka dengan seminar baru
   useEffect(() => {
@@ -110,10 +111,16 @@ const ModalSchedulingSeminar = ({
   };
 
   const handleScheduleSubmit = async (data: ScheduleFormData) => {
+    if (isSubmitting) return; // Mencegah pengiriman berulang
+
+    setIsSubmitting(true); // Aktifkan loading
     try {
       const endpoint = isReschedule
         ? `http://localhost:5500/api/seminars/proposal-schedule/${seminar.id}`
         : "http://localhost:5500/api/seminars/proposal-schedule";
+
+      // Simulasi delay 2 detik
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const response = await axios({
         method: isReschedule ? "put" : "put",
@@ -144,6 +151,8 @@ const ModalSchedulingSeminar = ({
           error.response?.data?.error || error.message
         }`
       );
+    } finally {
+      setIsSubmitting(false); // Matikan loading setelah selesai
     }
   };
 
@@ -459,7 +468,7 @@ const ModalSchedulingSeminar = ({
                                             : `https://robohash.org/${lecturer.name}`
                                         }
                                         alt="advisor-image"
-                                        className="rounded-full"
+                                        className="rounded-md"
                                       />
                                       <AvatarFallback className="bg-pastel-yellow text-jewel-yellow">
                                         {lecturer.name
@@ -509,17 +518,42 @@ const ModalSchedulingSeminar = ({
             />
 
             <DialogFooter>
-              <div className="w-full flex gap-4">
-                <Button
-                  variant="destructive"
-                  className="w-1/3"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Batal
-                </Button>
-                <Button className="flex-1" type="submit">
-                  {isReschedule ? "Simpan Perubahan" : "Simpan"}
-                </Button>
+              <div className="w-full flex flex-col gap-4">
+                {seminar.folderId && (
+                  <a
+                    href={`https://drive.google.com/drive/u/4/folders/${seminar.folderId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:underline text-sm font-medium"
+                  >
+                    Lihat Folder
+                  </a>
+                )}
+                <div className="w-full flex gap-4">
+                  <Button
+                    variant="destructive"
+                    className="w-1/3"
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isReschedule ? "Memperbarui..." : "Menyimpan..."}
+                      </>
+                    ) : isReschedule ? (
+                      "Simpan Perubahan"
+                    ) : (
+                      "Simpan"
+                    )}
+                  </Button>
+                </div>
               </div>
             </DialogFooter>
           </form>

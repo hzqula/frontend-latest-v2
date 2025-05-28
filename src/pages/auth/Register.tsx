@@ -28,6 +28,7 @@ import {
   Upload,
   Phone,
   IdCard,
+  Loader2,
 } from "lucide-react";
 import { Stepper } from "@/components/Stepper";
 
@@ -183,6 +184,8 @@ const Register: React.FC = () => {
   // Tahap 1: Kirim OTP
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Mencegah pengiriman berulang
+
     setIsLoading(true);
 
     try {
@@ -221,9 +224,11 @@ const Register: React.FC = () => {
     }
   };
 
-  // Tahap 2: Verifikasi OTP
+  // Verifikasi OTP
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Mencegah pengiriman berulang
+
     setIsLoading(true);
 
     try {
@@ -234,6 +239,7 @@ const Register: React.FC = () => {
         return;
       }
 
+      const startTime = Date.now(); // Catat waktu mulai
       const response = await fetch(
         "http://localhost:5500/api/auth/verify-otp",
         {
@@ -251,6 +257,16 @@ const Register: React.FC = () => {
         return;
       }
 
+      // Pastikan minimal 2 detik loading
+      const elapsedTime = Date.now() - startTime;
+      const minLoadingTime = 2000;
+      if (elapsedTime < minLoadingTime) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, minLoadingTime - elapsedTime)
+        );
+      }
+
+      // Setelah delay selesai, lanjutkan dengan toast dan perpindahan step
       toast.success(data.message || "OTP berhasil diverifikasi!");
       setCurrentStep(3);
     } catch (error) {
@@ -269,6 +285,8 @@ const Register: React.FC = () => {
   // Tahap 3: Submit registrasi
   const handleUserDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Mencegah pengiriman berulang
+
     setIsLoading(true);
 
     try {
@@ -320,6 +338,7 @@ const Register: React.FC = () => {
         return;
       }
 
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay 2 detik
       localStorage.setItem("token", data.token);
       toast.success(data.message || "Pendaftaran berhasil!");
       navigate("/login", { state: { registrationSuccess: true } });
@@ -370,8 +389,17 @@ const Register: React.FC = () => {
                 </Alert>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Mengirim OTP..." : "Lanjut"}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mengirim OTP...
+                  </>
+                ) : (
+                  <>
+                    Lanjut
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </form>
@@ -432,12 +460,30 @@ const Register: React.FC = () => {
                   onClick={() => setCurrentStep(1)}
                   disabled={isLoading}
                 >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Kembali
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Kembali
+                    </>
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Kembali
+                    </>
+                  )}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={isLoading}>
-                  {isLoading ? "Verifikasi..." : "Lanjut"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifikasi...
+                    </>
+                  ) : (
+                    <>
+                      Lanjut
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -659,11 +705,27 @@ const Register: React.FC = () => {
                   onClick={() => setCurrentStep(2)}
                   disabled={isLoading}
                 >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Kembali
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Kembali
+                    </>
+                  ) : (
+                    <>
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Kembali
+                    </>
+                  )}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={isLoading}>
-                  {isLoading ? "Mendaftar..." : "Daftar"}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Mendaftar...
+                    </>
+                  ) : (
+                    "Daftar"
+                  )}
                 </Button>
               </div>
             </div>

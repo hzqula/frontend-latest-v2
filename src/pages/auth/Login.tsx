@@ -23,6 +23,7 @@ import {
   Mail,
   Leaf,
   GraduationCap,
+  Loader2,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import axios from "axios";
@@ -86,6 +87,8 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Mencegah pengiriman berulang
+
     setIsLoading(true);
 
     try {
@@ -119,10 +122,9 @@ const Login: React.FC = () => {
       const { token, user } = response.data;
 
       login(token, user);
-      setTimeout(() => {
-        toast.success("Login berhasil");
-        navigate("/dashboard");
-      }, 1000);
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay 2 detik
+      toast.success("Login berhasil");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);
       toast.error(
@@ -271,29 +273,10 @@ const Login: React.FC = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                         Sedang masuk...
-                      </div>
+                      </>
                     ) : (
                       "Masuk"
                     )}

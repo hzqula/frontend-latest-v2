@@ -3,71 +3,20 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import {
-  HomeIcon,
   PanelLeft,
   LogOutIcon,
+  Edit2,
+  HomeIcon,
   Folder,
   File,
-  Edit2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import Breadcrumb from "@/components/Breadcrumb";
 import logo from "@/assets/img/logo-tl.png";
 import { Button } from "@/components/ui/button";
 import ModalEditProfile from "../ModalEditProfile";
-
-interface NavItemProps {
-  icon: React.ElementType;
-  path: string;
-  label: string;
-  isExpanded: boolean;
-  isActive: boolean;
-}
-
-const NavItem: React.FC<NavItemProps> = ({
-  icon: Icon,
-  path,
-  label,
-  isExpanded,
-  isActive,
-}) => {
-  const navigate = useNavigate();
-
-  return (
-    <li>
-      <button
-        onClick={() => navigate(path)}
-        className={`w-full relative flex items-center rounded-md overflow-hidden transition-all duration-200 px-3 py-2 mb-1
-          ${
-            isActive
-              ? "bg-primary-50 text-primary font-medium"
-              : "hover:bg-gray-100"
-          }
-        `}
-      >
-        <Icon className="h-4 w-4 flex-shrink-0" />
-
-        {isExpanded && (
-          <>
-            <span className="ml-3 transition-opacity text-xs duration-200">
-              {label}
-            </span>
-
-            {isActive && (
-              <div className="right-0 absolute w-1 h-full bg-primary"></div>
-            )}
-          </>
-        )}
-
-        {!isExpanded && <span className="sr-only">{label}</span>}
-        {isActive && (
-          <div className="right-0 absolute w-1 h-full bg-primary"></div>
-        )}
-      </button>
-    </li>
-  );
-};
+import NavItem from "../NavItems";
 
 interface StudentLayoutProps {
   children: React.ReactNode;
@@ -75,7 +24,6 @@ interface StudentLayoutProps {
 
 const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
   const { user, userRole, token, logout } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -104,7 +52,7 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    window.location.href = "/login"; // Mengganti navigate dengan redirect langsung
   };
 
   if (!user || !token || !userRole) {
@@ -181,7 +129,6 @@ const StudentLayout: React.FC<StudentLayoutProps> = ({ children }) => {
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul
             className={`

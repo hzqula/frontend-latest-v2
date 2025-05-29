@@ -246,14 +246,7 @@ const SeminarStepDetail = ({
           >
             {downloadButtonText}
           </Button>
-          {isStep3 && (
-            <Button
-              onClick={onNextStep}
-              className="bg-primary hover:bg-primary-700 text-primary-foreground"
-            >
-              Lanjut
-            </Button>
-          )}
+          {isStep3 && <Button onClick={onNextStep}>Lanjut</Button>}
         </div>
       </CardFooter>
     </Card>

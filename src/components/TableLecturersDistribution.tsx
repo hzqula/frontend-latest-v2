@@ -19,7 +19,7 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
   data,
 }) => {
   return (
-    <div className="hidden md:block overflow-x-auto border border-border">
+    <div className="hidden md:block h-96 overflow-x-auto border border-border ">
       <Table className="bg-background">
         <TableHeader>
           <TableRow className="text-xs">

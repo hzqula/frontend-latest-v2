@@ -1,4 +1,11 @@
-import { Calendar, Clock, MapPin } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Glasses,
+  GraduationCap,
+  MapPin,
+  User,
+} from "lucide-react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -74,10 +81,10 @@ const SeminarDetail: React.FC<SeminarDetailProps> = ({
       </div>
 
       <CardContent className="p-6 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Bagian Mahasiswa */}
-          <div className="flex md:col-span-1 lg:col-span-2 items-center justify-start md:justify-center space-x-4">
-            <Avatar className="size-12 md:size-16 border border-primary-800">
+          <div className="flex col-span-1 md:col-span-2 lg:col-span-2 items-center justify-start md:justify-center space-x-4">
+            <Avatar className="size-10 md:size-14 border-2 border-primary">
               <AvatarImage
                 src={
                   seminar.student?.profilePicture
@@ -86,15 +93,10 @@ const SeminarDetail: React.FC<SeminarDetailProps> = ({
                 }
                 alt="student-image"
               />
-              <AvatarFallback className="bg-primary-800 text-primary-800 text-xl">
-                {seminar.student?.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
             </Avatar>
             <div>
-              <div className="text-sm text-muted-foreground flex items-center">
+              <div className="flex items-center">
+                <User className="mr-1.5 h-4 w-4 text-muted-foreground" />
                 <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
                   {isAdvisor
                     ? "Mahasiswa yang Dibimbing"
@@ -113,88 +115,89 @@ const SeminarDetail: React.FC<SeminarDetailProps> = ({
           </div>
 
           {/* Bagian Dosen Pembimbing dan Penguji */}
-          <div className="space-y-6 md:col-span-1 lg:col-span-3">
+          <div className="space-y-6 md:col-span-2 md:justify-center lg:col-span-2 flex flex-col md:flex-row md:gap-8">
             <div>
-              <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">
-                Pembimbing
-              </h3>
+              <div className="flex items-center mb-2">
+                <GraduationCap className="mr-1.5 h-4 w-4 text-muted-foreground" />
+                <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                  Pembimbing
+                </h3>
+              </div>
               <div className="space-y-2">
-                <div className="flex flex-col md:flex-row md:space-x-4 md:space-y-0 space-y-2">
-                  {seminar.advisors.map((advisor, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center px-2 pb-1 border-l-2 border-primary-200 rounded-md w-full md:w-auto"
-                    >
-                      <Avatar>
-                        <AvatarImage
-                          src={
-                            advisor.lecturer?.profilePicture
-                              ? advisor.lecturer?.profilePicture
-                              : `https://robohash.org/${advisor.lecturer?.name}`
-                          }
-                          alt="advisor-image"
-                          className="border rounded-full h-8 w-8 md:h-12 md:w-12"
-                        />
-                        <AvatarFallback className="bg-primary-100 text-primary-800">
-                          {advisor.lecturer?.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="text-xs md:text-sm font-medium text-env-darker">
-                          {advisor.lecturer?.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {advisor.lecturer?.nip}
-                        </div>
+                {seminar.advisors.map((advisor, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center pb-1 rounded-md w-full md:w-auto"
+                  >
+                    <Avatar className="mr-2 border border-primary size-8 md:size-10">
+                      <AvatarImage
+                        src={
+                          advisor.lecturer?.profilePicture
+                            ? advisor.lecturer?.profilePicture
+                            : `https://robohash.org/${advisor.lecturer?.name}`
+                        }
+                        alt="advisor-image"
+                      />
+                      <AvatarFallback className="bg-primary-100 text-primary-800">
+                        {advisor.lecturer?.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-xs md:text-sm font-medium text-env-darker">
+                        {advisor.lecturer?.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {advisor.lecturer?.nip}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
 
             <div>
-              <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">
-                Penguji
-              </h3>
+              <div className="flex items-center mb-2">
+                <Glasses className="mr-1.5 h-4 w-4 text-muted-foreground" />
+
+                <h3 className="text-xs md:text-sm font-medium font-heading text-muted-foreground">
+                  Penguji
+                </h3>
+              </div>
               <div className="space-y-2">
-                <div className="flex flex-col md:flex-row md:space-x-4 md:space-y-0 space-y-2">
-                  {seminar.assessors.map((assessor, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center px-2 pb-1 border-l-2 border-primary-200 rounded-md w-full md:w-auto"
-                    >
-                      <Avatar>
-                        <AvatarImage
-                          src={
-                            assessor.lecturer?.profilePicture
-                              ? assessor.lecturer?.profilePicture
-                              : `https://robohash.org/${assessor.lecturer?.name}`
-                          }
-                          alt="assessor-image"
-                          className="border rounded-full h-8 w-8 md:h-12 md:w-12"
-                        />
-                        <AvatarFallback className="bg-primary-100 text-primary-800">
-                          {assessor.lecturer?.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="text-xs md:text-sm font-medium text-env-darker">
-                          {assessor.lecturer?.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {assessor.lecturer?.nip}
-                        </div>
+                {seminar.assessors.map((assessor, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center  pb-1 rounded-md w-full md:w-auto"
+                  >
+                    <Avatar className="mr-2 border border-primary size-8 md:size-10">
+                      <AvatarImage
+                        src={
+                          assessor.lecturer?.profilePicture
+                            ? assessor.lecturer?.profilePicture
+                            : `https://robohash.org/${assessor.lecturer?.name}`
+                        }
+                        alt="assessor-image"
+                      />
+                      <AvatarFallback className="bg-primary-100 text-primary-800">
+                        {assessor.lecturer?.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-xs md:text-sm font-medium text-env-darker">
+                        {assessor.lecturer?.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {assessor.lecturer?.nip}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

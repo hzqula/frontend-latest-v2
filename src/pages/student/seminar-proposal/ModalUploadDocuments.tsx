@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react"; // Hapus useEffect karena tidak lagi dibutuhkan
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, Download, FileText, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, FileText, Save, Loader2, FileEdit } from "lucide-react";
 import { toast } from "react-toastify";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -56,7 +55,7 @@ interface ModalUploadDocumentsProps {
   onOpenChange: (open: boolean) => void;
   initialData: Record<string, File | null>;
   uploadedStatus: Record<string, boolean>;
-  seminarId: number | null; // Tambahkan prop seminarId
+  seminarId: number | null;
 }
 
 const ModalUploadDocuments = ({
@@ -113,7 +112,6 @@ const ModalUploadDocuments = ({
       const method = uploadedStatus[documentId] ? "PUT" : "POST";
       const endpoint = "http://localhost:5500/api/seminars/proposal-documents";
 
-      // Simulasi progress unggah
       let progress = 0;
       const simulateProgress = setInterval(() => {
         progress += 10;
@@ -139,6 +137,7 @@ const ModalUploadDocuments = ({
 
       toast.success("Dokumen berhasil disimpan ke Google Drive!");
       uploadedStatus[documentId] = true; // Perbarui status di frontend
+      setUploadedDocuments((prev) => ({ ...prev, [documentId]: null })); // Reset file setelah berhasil disimpan
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Gagal menyimpan dokumen."
@@ -147,6 +146,8 @@ const ModalUploadDocuments = ({
       setIsUploading((prev) => ({ ...prev, [documentId]: false }));
     }
   };
+
+  const totalDocuments = requiredDocuments.length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,122 +162,84 @@ const ModalUploadDocuments = ({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="space-y-4 max-h-[60vh] pr-2">
-          <div className="space-y-4">
-            {requiredDocuments.map((document) => (
-              <div key={document.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-sm font-bold font-heading text-primary-800">
-                      {document.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {document.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      (Maksimal ukuran file: 2MB)
-                    </p>
-                  </div>
-                  {uploadedStatus[document.id] && (
+        <ScrollArea className="max-h-[60vh] pr-2">
+          {requiredDocuments.map((document, index) => (
+            <div key={document.id} className="border rounded-lg p-4 mb-2">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-sm font-bold font-heading text-primary-800">
+                    {document.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {document.description}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    (Maksimal ukuran file: 2MB)
+                  </p>
+                </div>
+                {uploadedStatus[document.id] && (
+                  <div className="flex flex-row items-center gap-1">
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2 mt-4">
-                  <div className="relative gap-2 flex md:flex-row flex-col">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                      onClick={() => window.open(document.template, "_blank")}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download Template
-                    </Button>
-
-                    <div className="relative w-full">
-                      <Button
-                        variant={
-                          uploadedStatus[document.id] ||
-                          uploadedDocuments[document.id]
-                            ? "outline"
-                            : "default"
-                        }
-                        size="sm"
-                        className="flex items-center gap-2 w-full justify-between"
-                        disabled={isUploading[document.id]}
-                      >
-                        <span>
-                          {uploadedStatus[document.id]
-                            ? "Perbarui Dokumen"
-                            : "Unggah Dokumen"}
-                        </span>
-                        <Upload className="h-4 w-4" />
-                        <Input
-                          type="file"
-                          accept=".pdf"
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
-                            handleFileUpload(document.id, file);
-                          }}
-                          disabled={isUploading[document.id]}
-                        />
-                      </Button>
-                      {uploadedDocuments[document.id] && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="mt-2 w-full"
-                          onClick={() => handleSaveDocument(document.id)}
-                          disabled={isUploading[document.id]}
-                        >
-                          {isUploading[document.id] ? "Menyimpan..." : "Simpan"}
-                        </Button>
-                      )}
-                      {uploadedStatus[document.id] && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2 w-full"
-                          onClick={() => handleSaveDocument(document.id)}
-                          disabled={isUploading[document.id]}
-                        >
-                          {isUploading[document.id] ? "Memperbarui..." : "Edit"}
-                        </Button>
-                      )}
-                    </div>
+                    <span className="text-xs text-green-600 font-semibold">
+                      {index + 1}/{totalDocuments}
+                    </span>
                   </div>
-
-                  {uploadedDocuments[document.id] && (
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                      <FileText className="h-4 w-4" />
-                      {uploadedDocuments[document.id]?.name}
-                    </div>
-                  )}
-                  {(isUploading[document.id] ||
-                    uploadProgress[document.id]) && (
-                    <Progress
-                      value={uploadProgress[document.id] || 0}
-                      className="mt-2"
-                    />
-                  )}
-                </div>
+                )}
               </div>
-            ))}
-          </div>
-        </ScrollArea>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="destructive"
-            className="w-full"
-            onClick={() => onOpenChange(false)}
-          >
-            Tutup
-          </Button>
-        </DialogFooter>
+              <div className="flex flex-col gap-2 mt-4">
+                <div className="flex flex-row items-center gap-2">
+                  <label className="cursor-pointer text-xs inline-flex items-center justify-center px-3 py-[0.45rem] border-env-base border text-env-base rounded-md hover:bg-gray-100 transition-colors">
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        handleFileUpload(document.id, file);
+                      }}
+                      disabled={isUploading[document.id]}
+                    />
+                    <FileEdit className="h-4 w-4 mr-2" />
+                    {uploadedStatus[document.id] ? "Ubah File" : "Pilih File"}
+                  </label>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="flex items-center justify-center px-2 py-2 w-fit"
+                    onClick={() => handleSaveDocument(document.id)}
+                    disabled={
+                      isUploading[document.id] ||
+                      (!uploadedDocuments[document.id] &&
+                        !uploadedStatus[document.id]) ||
+                      (uploadedStatus[document.id] &&
+                        !uploadedDocuments[document.id])
+                    }
+                  >
+                    {isUploading[document.id] ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                {uploadedDocuments[document.id] && (
+                  <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                    <FileText className="h-4 w-4" />
+                    {uploadedDocuments[document.id]?.name}
+                  </div>
+                )}
+                {(isUploading[document.id] || uploadProgress[document.id]) && (
+                  <Progress
+                    value={uploadProgress[document.id] || 0}
+                    className="mt-2"
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

@@ -51,7 +51,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-interface ModalResearchDetailProps {
+interface ModalDetailResearchProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: FormData) => void;
@@ -62,12 +62,12 @@ interface ModalResearchDetailProps {
   };
 }
 
-const ModalResearchDetail = ({
+const ModalDetailResearch = ({
   open,
   onOpenChange,
   onSubmit,
   initialData,
-}: ModalResearchDetailProps) => {
+}: ModalDetailResearchProps) => {
   const [showSecondSupervisor, setShowSecondSupervisor] = useState<boolean>(
     !!initialData.advisor2
   );
@@ -450,4 +450,4 @@ const ModalResearchDetail = ({
   );
 };
 
-export default ModalResearchDetail;
+export default ModalDetailResearch;

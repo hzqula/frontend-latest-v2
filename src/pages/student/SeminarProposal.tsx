@@ -39,7 +39,6 @@ import SeminarStepDetail from "@/components/SeminarStepDetail";
 
 const StudentSeminarProposal = () => {
   const [currentStep, setCurrentStep] = useState<string>("step1");
-  // const [maxStepReached, setMaxStepReached] = useState<number>(1);
   const { user, token } = useAuth();
   const lecturersQuery = useApiData({ type: "lecturers" });
   const lecturers = lecturersQuery.data || [];
@@ -172,102 +171,18 @@ const StudentSeminarProposal = () => {
         ),
       });
 
-      if (seminarData.status === "DRAFT") setCurrentStep("step1");
-      else if (seminarData.status === "SUBMITTED") setCurrentStep("step2");
-      else if (seminarData.status === "SCHEDULED") setCurrentStep("step3");
-      else if (seminarData.status === "COMPLETED") setCurrentStep("step4");
+      if (seminar.status === "DRAFT") setCurrentStep("step2");
+      else if (seminar.status === "SUBMITTED" || seminar.status === "SCHEDULED")
+        setCurrentStep("step3");
+      else if (seminar.status === "COMPLETED") setCurrentStep("step4");
+      else setCurrentStep("step1");
     }
   }, [seminarQuery.data, modalDocumentUploadOpen]);
+  console.log("Current Step:", currentStep);
+  console.log("Seminar Status:", seminar.status);
 
   console.log("Seminar", seminar);
   console.log("Dospem: ", seminar.advisors);
-
-  const handleResearchDetailsSubmit = async (data: {
-    researchTitle: string;
-    advisor1: string;
-    advisor2?: string;
-  }) => {
-    try {
-      const advisorNIPs = [data.advisor1];
-      if (data.advisor2) advisorNIPs.push(data.advisor2);
-
-      console.log("ID Seminar:", seminar);
-      console.log("Data: ", data);
-
-      const endpoint = seminar.id
-        ? `http://localhost:5500/api/seminars/proposal-register/${seminar.id}`
-        : "http://localhost:5500/api/seminars/proposal-register";
-      const method = seminar.id ? "put" : "post";
-
-      const requestData = {
-        title: data.researchTitle,
-        advisorNIPs,
-        ...(method === "post" && { studentNIM: user.profile.nim }),
-      };
-
-      console.log("Request Data:", {
-        method,
-        url: endpoint,
-        data: requestData,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const response = await axios({
-        method,
-        url: endpoint,
-        data: requestData,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("Server Response:", response.data);
-
-      const newSeminarId = response.data.seminar.id;
-      setSeminar((prev) => ({
-        ...prev,
-        id: newSeminarId,
-        title: data.researchTitle,
-        advisors: [
-          {
-            lecturerNIP: data.advisor1,
-            lecturerName:
-              lecturers.find(
-                (lecturer: Lecturer) => lecturer.nip === data.advisor1
-              )?.name || "",
-          },
-          ...(data.advisor2
-            ? [
-                {
-                  lecturerNIP: data.advisor2,
-                  lecturerName:
-                    lecturers.find(
-                      (lecturer: Lecturer) => lecturer.nip === data.advisor2
-                    )?.name || "",
-                },
-              ]
-            : []),
-        ],
-        status: "DRAFT",
-        student:
-          method === "post"
-            ? { nim: user.profile.nim!, name: user.profile.name || "" }
-            : prev.student,
-      }));
-      setModalResearchDetailOpen(false);
-      setCurrentStep("step2");
-      toast.success(
-        method === "put"
-          ? "Detail seminar berhasil diperbarui!"
-          : "Detail seminar berhasil didaftarkan!"
-      );
-
-      seminarQuery.refetch();
-    } catch (error: any) {
-      console.error("Error updating seminar:", error.response?.data || error);
-      toast.error(
-        "Failed to update: " + (error.response?.data?.message || error.message)
-      );
-    }
-  };
 
   const allDocumentsUploaded = () =>
     Object.values(seminar.documents).every((doc) => doc.uploaded);
@@ -300,7 +215,6 @@ const StudentSeminarProposal = () => {
         return;
       }
       setCurrentStep(`step${nextStepNum}`);
-      // setMaxStepReached((prev) => Math.max(prev, nextStepNum));
     }
   };
 
@@ -313,24 +227,23 @@ const StudentSeminarProposal = () => {
 
   const handlePrintInvitation = async (seminar: RegisterSeminar) => {
     try {
-      // Ambil tanggal dan ekstrak hari serta tanggal
       const dateObj = seminar.time ? new Date(seminar.time) : null;
       const hari = dateObj
-        ? dateObj.toLocaleDateString("id-ID", { weekday: "long" }) // "Senin", "Selasa", dll.
+        ? dateObj.toLocaleDateString("id-ID", { weekday: "long" })
         : "Tidak diketahui";
       const formattedDate = dateObj
         ? dateObj.toLocaleDateString("id-ID", {
             day: "numeric",
             month: "long",
             year: "numeric",
-          }) // "13 Mei 2025"
+          })
         : "Belum dijadwalkan";
 
       const data = {
         student_name: seminar.student?.name || "Tidak diketahui",
         nim: seminar.student?.nim || "Tidak diketahui",
         judul_penelitian: seminar.title || "Tidak diketahui",
-        date: formattedDate, // Hanya tanggal (misalnya: "13 Mei 2025")
+        date: formattedDate,
         time: seminar.time ? formatTime(seminar.time) : "Belum dijadwalkan",
         room: seminar.room || "Belum ditentukan",
         ketua_seminar: seminar.advisors[0]?.lecturerName || "Tidak ditentukan",
@@ -338,13 +251,13 @@ const StudentSeminarProposal = () => {
         pembimbing_2: seminar.advisors[1]?.lecturerName || "Tidak ditentukan",
         penguji_1: seminar.assessors[0]?.lecturerName || "Tidak ditentukan",
         penguji_2: seminar.assessors[1]?.lecturerName || "Tidak ditentukan",
-        hari: hari, // Hari lengkap (misalnya: "Selasa")
+        hari: hari,
       };
 
       console.log("Data sent to backend:", data);
 
       const response = await axios.post(
-        "http://localhost:5500/api/generate-invitation", // Ubah port menjadi 5500
+        "http://localhost:5500/api/generate-invitation",
         data,
         {
           headers: {
@@ -358,7 +271,7 @@ const StudentSeminarProposal = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement("a");
       a.href = url;
-      a.download = `invitation_${data.student_name.replace(/\s+/g, "_")}.pdf`; // Ubah ekstensi menjadi .pdf
+      a.download = `invitation_${data.student_name.replace(/\s+/g, "_")}.pdf`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success("Undangan berhasil diunduh!");
@@ -381,6 +294,7 @@ const StudentSeminarProposal = () => {
       }
     }
   };
+
   const handlePrintReport = () => {
     setShouldPrintReport(true);
   };
@@ -410,6 +324,7 @@ const StudentSeminarProposal = () => {
       SCHEDULED: 75,
       COMPLETED: 100,
     }[seminar.status!] || 0;
+
   return (
     <StudentLayout>
       <div className="flex flex-col mb-4">
@@ -548,11 +463,11 @@ const StudentSeminarProposal = () => {
         )}
 
         {currentStep === "step1" && (
-          <Card className="bg-white col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden ">
+          <Card className="bg-white col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden">
             <div className="relative bg-gradient-to-r from-env-base to-env-darker">
               <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
 
-              <CardHeader className="relative z-10 ">
+              <CardHeader className="relative z-10">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
                     Detail Seminar
@@ -652,7 +567,6 @@ const StudentSeminarProposal = () => {
             </div>
             <CardContent>
               <div className="space-y-4">
-                {/* Tampilkan status semua dokumen */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(seminar.documents).map(([key, doc]) => {
                     const reqDoc = requiredDocuments.find((d) => d.id === key);
@@ -694,7 +608,6 @@ const StudentSeminarProposal = () => {
                   })}
                 </div>
 
-                {/* Tampilkan dokumen yang belum diunggah jika belum semua diunggah */}
                 {!allDocumentsUploaded() && (
                   <div className="mt-4">
                     <h3 className="text-sm md:text-base font-medium font-heading text-muted-foreground mb-2">
@@ -715,7 +628,6 @@ const StudentSeminarProposal = () => {
                   </div>
                 )}
 
-                {/* Pesan ketika semua dokumen sudah diunggah */}
                 {allDocumentsUploaded() && (
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary-600" />
@@ -767,12 +679,7 @@ const StudentSeminarProposal = () => {
                     ? "Perbarui Dokumen"
                     : "Unggah Dokumen"}
                 </Button>
-                <Button
-                  onClick={handleNextStep}
-                  className="bg-primary hover:bg-primary-700 text-primary-foreground"
-                >
-                  Lanjut
-                </Button>
+                <Button onClick={handleNextStep}>Lanjut</Button>
               </div>
             </CardFooter>
           </Card>
@@ -804,12 +711,18 @@ const StudentSeminarProposal = () => {
       <ModalDetailResearch
         open={modalResearchDetailOpen}
         onOpenChange={setModalResearchDetailOpen}
-        onSubmit={handleResearchDetailsSubmit}
         initialData={{
           researchTitle: seminar.title,
           advisor1: seminar.advisors[0]?.lecturerNIP,
           advisor2: seminar.advisors[1]?.lecturerNIP || "",
         }}
+        user={user}
+        token={token}
+        lecturers={lecturers}
+        seminar={seminar}
+        setSeminar={setSeminar}
+        setCurrentStep={setCurrentStep}
+        seminarQuery={seminarQuery}
       />
       <ModalUploadDocuments
         open={modalDocumentUploadOpen}

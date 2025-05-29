@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea"; // Impor Textarea dari Shadcn
-import { Plus, Minus, Check, ChevronsUpDown, Loader2 } from "lucide-react"; // Tambahkan Loader2
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Minus, Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -40,6 +40,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import axios from "axios";
+import { Lecturer, RegisterSeminar } from "@/configs/types";
 
 const formSchema = z.object({
   researchTitle: z
@@ -54,19 +56,31 @@ type FormData = z.infer<typeof formSchema>;
 interface ModalDetailResearchProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: FormData) => void;
   initialData: {
     researchTitle: string;
     advisor1: string;
     advisor2: string;
   };
+  user: any;
+  token: string | null;
+  lecturers: Lecturer[];
+  seminar: RegisterSeminar;
+  setSeminar: (seminar: RegisterSeminar) => void;
+  setCurrentStep: (step: string) => void;
+  seminarQuery: any; // Sesuaikan tipe seminarQuery sesuai kebutuhan
 }
 
 const ModalDetailResearch = ({
   open,
   onOpenChange,
-  onSubmit,
   initialData,
+  user,
+  token,
+  lecturers,
+  seminar,
+  setSeminar,
+  setCurrentStep,
+  seminarQuery,
 }: ModalDetailResearchProps) => {
   const [showSecondSupervisor, setShowSecondSupervisor] = useState<boolean>(
     !!initialData.advisor2
@@ -77,7 +91,7 @@ const ModalDetailResearch = ({
   const lecturersQuery = useApiData({ type: "lecturers" });
   const availableSupervisors = lecturersQuery.data || [];
 
-  const [isSubmitting, setIsSubmitting] = useState(false); // State untuk loading
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -89,19 +103,90 @@ const ModalDetailResearch = ({
   });
 
   const handleSubmit = async (data: FormData) => {
-    if (isSubmitting) return; // Mencegah pengiriman berulang
+    if (isSubmitting) return;
 
-    setIsSubmitting(true); // Aktifkan loading
+    setIsSubmitting(true);
     try {
-      // Simulasi delay 2 detik
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const advisorNIPs = [data.advisor1];
+      if (data.advisor2) advisorNIPs.push(data.advisor2);
 
-      await onSubmit(data);
+      console.log("ID Seminar:", seminar);
+      console.log("Data: ", data);
+
+      const endpoint = seminar.id
+        ? `http://localhost:5500/api/seminars/proposal-register/${seminar.id}`
+        : "http://localhost:5500/api/seminars/proposal-register";
+      const method = seminar.id ? "put" : "post";
+
+      const requestData = {
+        title: data.researchTitle,
+        advisorNIPs,
+        ...(method === "post" && { studentNIM: user.profile.nim }),
+      };
+
+      console.log("Request Data:", {
+        method,
+        url: endpoint,
+        data: requestData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const response = await axios({
+        method,
+        url: endpoint,
+        data: requestData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("Server Response:", response.data);
+
+      const newSeminarId = response.data.seminar.id;
+      setSeminar({
+        ...seminar,
+        id: newSeminarId,
+        title: data.researchTitle,
+        advisors: [
+          {
+            lecturerNIP: data.advisor1,
+            lecturerName:
+              lecturers.find(
+                (lecturer: Lecturer) => lecturer.nip === data.advisor1
+              )?.name || "",
+          },
+          ...(data.advisor2
+            ? [
+                {
+                  lecturerNIP: data.advisor2,
+                  lecturerName:
+                    lecturers.find(
+                      (lecturer: Lecturer) => lecturer.nip === data.advisor2
+                    )?.name || "",
+                },
+              ]
+            : []),
+        ],
+        status: "DRAFT",
+        student:
+          method === "post"
+            ? { nim: user.profile.nim!, name: user.profile.name || "" }
+            : seminar.student,
+      });
       onOpenChange(false);
-    } catch (error) {
-      toast.error("Gagal menyimpan detail seminar.");
+      setCurrentStep("step2");
+      toast.success(
+        method === "put"
+          ? "Detail seminar berhasil diperbarui!"
+          : "Detail seminar berhasil didaftarkan!"
+      );
+
+      seminarQuery.refetch();
+    } catch (error: any) {
+      console.error("Error updating seminar:", error.response?.data || error);
+      toast.error(
+        "Failed to update: " + (error.response?.data?.message || error.message)
+      );
     } finally {
-      setIsSubmitting(false); // Matikan loading setelah selesai
+      setIsSubmitting(false);
     }
   };
 
@@ -141,7 +226,7 @@ const ModalDetailResearch = ({
                     <Textarea
                       className="text-xs md:text-sm md:placeholder:text-sm placeholder:text-xs resize-y"
                       placeholder="Masukkan judul penelitian Anda"
-                      rows={3} // Atur tinggi awal Textarea
+                      rows={3}
                       {...field}
                     />
                   </FormControl>

@@ -1,5 +1,8 @@
+// SeminarStepDetail.tsx
 "use client";
 
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
   Card,
   CardContent,
@@ -19,7 +22,6 @@ interface SeminarStepDetailProps {
   seminar: RegisterSeminar;
   onPrevStep: () => void;
   onNextStep: () => void;
-  handlePrint: (seminar: RegisterSeminar) => void;
   status: string | null;
 }
 
@@ -28,7 +30,6 @@ const SeminarStepDetail = ({
   seminar,
   onPrevStep,
   onNextStep,
-  handlePrint,
   status,
 }: SeminarStepDetailProps) => {
   const isStep3 = step === "step3";
@@ -61,6 +62,153 @@ const SeminarStepDetail = ({
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  console.log("Seminar: ", seminar);
+
+  // Fungsi untuk menangani pengunduhan undangan (step3)
+  const handlePrintInvitation = async (seminar: RegisterSeminar) => {
+    try {
+      const dateObj = seminar.time ? new Date(seminar.time) : null;
+      const hari = dateObj
+        ? dateObj.toLocaleDateString("id-ID", { weekday: "long" })
+        : "-";
+      const formattedDate = dateObj
+        ? dateObj.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : "-";
+      const formattedTime = dateObj
+        ? dateObj.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "-";
+
+      const data = {
+        student_name: seminar.student?.name || "-",
+        nim: seminar.student?.nim || "-",
+        judul_penelitian: seminar.title || "-",
+        date: formattedDate,
+        time: formattedTime,
+        room: seminar.room || "-",
+        ketua_seminar: seminar.advisors[0]?.lecturerName || "-",
+        pembimbing_1: seminar.advisors[0]?.lecturerName || "-",
+        pembimbing_2: seminar.advisors[1]?.lecturerName || "-",
+        penguji_1: seminar.assessors[0]?.lecturerName || "-",
+        penguji_2: seminar.assessors[1]?.lecturerName || "-",
+        hari: hari,
+      };
+
+      console.log("Data sent to backend:", data);
+
+      const response = await axios.post(
+        "http://localhost:5500/api/documents/generate-seminar-invitation",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "blob",
+        }
+      );
+
+      console.log("Invitation Response:", response);
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `[Undangan Seminar] ${seminar.student?.name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Undangan berhasil diunduh!");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.message);
+        toast.error(`Gagal mengunduh undangan: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("Terjadi kesalahan tak terduga. Silakan coba lagi.");
+      }
+    }
+  };
+
+  // Fungsi untuk menangani pengunduhan berita acara (step4)
+  const handlePrintReport = async (seminar: RegisterSeminar) => {
+    try {
+      const dateObj = seminar.time ? new Date(seminar.time) : null;
+      const hari = dateObj
+        ? dateObj.toLocaleDateString("id-ID", { weekday: "long" })
+        : "-";
+      const formattedDate = dateObj
+        ? dateObj.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })
+        : "-";
+      const formattedTime = dateObj
+        ? dateObj.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "-";
+
+      const data = {
+        student_name: seminar.student?.name || "-",
+        nim: seminar.student?.nim || "-",
+        judul_penelitian: seminar.title || "-",
+        date: formattedDate,
+        time: formattedTime,
+        ketua_seminar: seminar.advisors[0]?.lecturerName || "-", // Ketua Seminar = Pembimbing 1
+        pembimbing_1: seminar.advisors[0]?.lecturerName || "-",
+        pembimbing_2: seminar.advisors[1]?.lecturerName || "-",
+        penguji_1: seminar.assessors[0]?.lecturerName || "-",
+        penguji_2: seminar.assessors[1]?.lecturerName || "-",
+        hari: hari,
+        nip_ketua_seminar: seminar.advisors[0]?.lecturerNIP || "-",
+      };
+
+      console.log("Data sent to backend for event report:", data);
+
+      const response = await axios.post(
+        "http://localhost:5500/api/documents/generate-event-report",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "blob",
+        }
+      );
+
+      console.log("Event Report Response:", response);
+      console.log("Seminar Data:", seminar);
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `[Berita Acara] ${seminar.student?.name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Berita Acara berhasil diunduh!");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.message);
+        toast.error(`Gagal mengunduh berita acara: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("Terjadi kesalahan tak terduga. Silakan coba lagi.");
+      }
+    }
   };
 
   return (
@@ -207,7 +355,11 @@ const SeminarStepDetail = ({
       </CardContent>
       <CardFooter className="md:hidden flex-col flex gap-2">
         <Button
-          onClick={() => handlePrint(seminar)}
+          onClick={() =>
+            isStep3
+              ? handlePrintInvitation(seminar)
+              : handlePrintReport(seminar)
+          }
           disabled={downloadDisabled}
           variant="outline"
           className="border-2 w-full border-primary text-env-darker"
@@ -239,7 +391,11 @@ const SeminarStepDetail = ({
         </Button>
         <div className="space-x-2">
           <Button
-            onClick={() => handlePrint(seminar)}
+            onClick={() =>
+              isStep3
+                ? handlePrintInvitation(seminar)
+                : handlePrintReport(seminar)
+            }
             disabled={downloadDisabled}
             variant="outline"
             className="border-2 border-primary text-env-darker"

@@ -1,10 +1,4 @@
 import { RouteObject } from "react-router";
-// import Landing from "../pages/landing/Landing";
-// import Galeri from "../pages/landing/Galeri";
-// import FormatPenulisanTA from "../pages/landing/FormatPenulisanTa";
-// import SOP from "../pages/landing/SOP";
-// import KalenderAkademik from "../pages/landing/KalenderAkademik";
-
 // import Dashboard from "../pages/redirect/Dashboard";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -17,15 +11,10 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import Announcement from "@/pages/coordinator/Announcement";
 import UpdateProfile from "@/pages/student/UpdateProfile";
 import AssessSeminar from "@/components/AssessSeminar";
-// import SeminarProposal from "../pages/redirect/SeminarProposal";
-// import AssessSeminarProposal from "../pages/lecturer/seminar-proposal/AssessSeminar";
+import AssessSeminarDetail from "@/pages/coordinator/AssessSeminarDetail";
 
 export const publicRoutes: RouteObject[] = [
   { path: "/", element: <Landing /> },
-  // { path: "/galeri", element: <Galeri /> },
-  // { path: "/panduan/format-penulisan-ta", element: <FormatPenulisanTA /> },pu
-  // { path: "/panduan/sop", element: <SOP /> },
-  // { path: "/kalender-akademik", element: <KalenderAkademik /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/reset-password", element: <ResetPassword /> },
@@ -63,5 +52,14 @@ export const privateRoutes: RouteObject[] = [
   {
     path: "/edit-profil",
     element: <UpdateProfile />,
+  },
+
+  {
+    path: "/seminar-proposal/detail/:seminarId",
+    element: <AssessSeminarDetail />,
+  },
+  {
+    path: "/seminar-hasil/detail/:seminarId",
+    element: <AssessSeminarDetail />,
   },
 ];

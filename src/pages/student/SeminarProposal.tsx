@@ -1,9 +1,9 @@
+// /student/SeminarProposal.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApiData } from "@/hooks/useApiData";
-import axios from "axios";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -28,8 +28,6 @@ import { Badge } from "@/components/ui/badge";
 import StudentLayout from "@/components/layouts/StudentLayout";
 import { Stepper } from "@/components/Stepper";
 import { Link } from "react-router";
-import SeminarInvitation from "@/components/SeminarInvitation";
-import EvenReport from "@/components/EventReport";
 import studentImg from "@/assets/img/student-ill.png";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { Lecturer, RegisterSeminar } from "@/configs/types";
@@ -76,8 +74,6 @@ const StudentSeminarProposal = () => {
 
   const [modalResearchDetailOpen, setModalResearchDetailOpen] = useState(false);
   const [modalDocumentUploadOpen, setModalDocumentUploadOpen] = useState(false);
-  const [shouldPrint, setShouldPrint] = useState(false);
-  const [shouldPrintReport, setShouldPrintReport] = useState(false);
 
   if (!user || !user.profile?.nim) {
     return <div>Loading...</div>;
@@ -95,7 +91,7 @@ const StudentSeminarProposal = () => {
         status: seminarData.status,
         advisors: seminarData.advisors.map(
           (advisor: { lecturer?: Lecturer }) => ({
-            lecturerNIP: advisor.lecturer?.name,
+            lecturerNIP: advisor.lecturer?.nip,
             lecturerName: advisor.lecturer?.name,
             profilePicture: advisor.lecturer?.profilePicture,
           })
@@ -223,80 +219,6 @@ const StudentSeminarProposal = () => {
     if (prevStepNum >= 1) {
       setCurrentStep(`step${prevStepNum}`);
     }
-  };
-
-  const handlePrintInvitation = async (seminar: RegisterSeminar) => {
-    try {
-      const dateObj = seminar.time ? new Date(seminar.time) : null;
-      const hari = dateObj
-        ? dateObj.toLocaleDateString("id-ID", { weekday: "long" })
-        : "Tidak diketahui";
-      const formattedDate = dateObj
-        ? dateObj.toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })
-        : "Belum dijadwalkan";
-
-      const data = {
-        student_name: seminar.student?.name || "Tidak diketahui",
-        nim: seminar.student?.nim || "Tidak diketahui",
-        judul_penelitian: seminar.title || "Tidak diketahui",
-        date: formattedDate,
-        time: seminar.time ? formatTime(seminar.time) : "Belum dijadwalkan",
-        room: seminar.room || "Belum ditentukan",
-        ketua_seminar: seminar.advisors[0]?.lecturerName || "Tidak ditentukan",
-        pembimbing_1: seminar.advisors[0]?.lecturerName || "Tidak ditentukan",
-        pembimbing_2: seminar.advisors[1]?.lecturerName || "Tidak ditentukan",
-        penguji_1: seminar.assessors[0]?.lecturerName || "Tidak ditentukan",
-        penguji_2: seminar.assessors[1]?.lecturerName || "Tidak ditentukan",
-        hari: hari,
-      };
-
-      console.log("Data sent to backend:", data);
-
-      const response = await axios.post(
-        "http://localhost:5500/api/generate-invitation",
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob",
-        }
-      );
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `invitation_${data.student_name.replace(/\s+/g, "_")}.pdf`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast.success("Undangan berhasil diunduh!");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.code === "ERR_NETWORK") {
-          console.error(
-            "Network error: Backend server might not be running or port is incorrect."
-          );
-          toast.error(
-            "Gagal terhubung ke server. Pastikan server backend berjalan di port 5500."
-          );
-        } else {
-          console.error("Error downloading invitation:", error.message);
-          toast.error("Gagal mengunduh undangan: " + error.message);
-        }
-      } else {
-        console.error("Unexpected error:", error);
-        toast.error("Terjadi kesalahan tak terduga. Silakan coba lagi.");
-      }
-    }
-  };
-
-  const handlePrintReport = () => {
-    setShouldPrintReport(true);
   };
 
   const formatDate = (dateString: string | null): string => {
@@ -691,7 +613,6 @@ const StudentSeminarProposal = () => {
             seminar={seminar}
             onPrevStep={handlePrevStep}
             onNextStep={handleNextStep}
-            handlePrint={handlePrintInvitation}
             status={seminar.status}
           />
         )}
@@ -702,7 +623,6 @@ const StudentSeminarProposal = () => {
             seminar={seminar}
             onPrevStep={handlePrevStep}
             onNextStep={handleNextStep}
-            handlePrint={handlePrintReport}
             status={seminar.status}
           />
         )}
@@ -737,17 +657,6 @@ const StudentSeminarProposal = () => {
           ])
         )}
         seminarId={seminar.id}
-      />
-
-      <SeminarInvitation
-        seminar={seminar}
-        shouldPrint={shouldPrint}
-        onPrintComplete={() => setShouldPrint(false)}
-      />
-      <EvenReport
-        seminar={seminar}
-        shouldPrint={shouldPrintReport}
-        onPrintComplete={() => setShouldPrintReport(false)}
       />
     </StudentLayout>
   );

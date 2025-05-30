@@ -62,6 +62,7 @@ const StudentSeminarProposal = () => {
     time: null,
     room: null,
     assessors: [],
+    type: "PROPOSAL",
   });
 
   const requiredDocuments = [
@@ -165,6 +166,7 @@ const StudentSeminarProposal = () => {
             profilePicture: assessor.lecturer?.profilePicture,
           })
         ),
+        type: seminarData.type || "PROPOSAL",
       });
 
       if (seminar.status === "DRAFT") setCurrentStep("step2");

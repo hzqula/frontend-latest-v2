@@ -100,6 +100,7 @@ const SeminarStepDetail = ({
         penguji_1: seminar.assessors[0]?.lecturerName || "-",
         penguji_2: seminar.assessors[1]?.lecturerName || "-",
         hari: hari,
+        type: seminar.type,
       };
 
       console.log("Data sent to backend:", data);
@@ -165,13 +166,14 @@ const SeminarStepDetail = ({
         judul_penelitian: seminar.title || "-",
         date: formattedDate,
         time: formattedTime,
-        ketua_seminar: seminar.advisors[0]?.lecturerName || "-", // Ketua Seminar = Pembimbing 1
+        ketua_seminar: seminar.advisors[0]?.lecturerName || "-",
+        nip_ketua_seminar: seminar.advisors[0]?.lecturerNIP || "-",
         pembimbing_1: seminar.advisors[0]?.lecturerName || "-",
         pembimbing_2: seminar.advisors[1]?.lecturerName || "-",
         penguji_1: seminar.assessors[0]?.lecturerName || "-",
         penguji_2: seminar.assessors[1]?.lecturerName || "-",
         hari: hari,
-        nip_ketua_seminar: seminar.advisors[0]?.lecturerNIP || "-",
+        type: seminar.type,
       };
 
       console.log("Data sent to backend for event report:", data);

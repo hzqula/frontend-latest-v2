@@ -57,6 +57,7 @@ export interface RegisterSeminar {
     lecturerName?: string;
     profilePicture?: string;
   }[];
+  type: "HASIL" | "PROPOSAL";
 }
 
 export interface Student {

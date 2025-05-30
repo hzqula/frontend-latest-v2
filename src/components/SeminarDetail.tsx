@@ -40,7 +40,7 @@ const SeminarDetail: React.FC<SeminarDetailProps> = ({
               <Badge className="bg-pastel-green text-jewel-green mb-2">
                 Seminar Proposal
               </Badge>
-              <CardTitle className="text-xl md:text-2xl mb-1 font-heading font-bold text-primary-foreground">
+              <CardTitle className="text-lg md:text-2xl mb-1 font-heading font-bold text-primary-foreground">
                 {seminar.title}
               </CardTitle>
               <div className="text-primary-100 mt-1">

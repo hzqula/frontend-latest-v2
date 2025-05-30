@@ -11,7 +11,7 @@ import ResetPassword from "@/pages/auth/ResetPassword";
 import Announcement from "@/pages/coordinator/Announcement";
 import UpdateProfile from "@/pages/student/UpdateProfile";
 import AssessSeminar from "@/components/AssessSeminar";
-import AssessSeminarDetail from "@/pages/coordinator/AssessSeminarDetail";
+import SeminarAssessmentDetail from "@/pages/coordinator/SeminarAssessmentDetail";
 
 export const publicRoutes: RouteObject[] = [
   { path: "/", element: <Landing /> },
@@ -56,10 +56,10 @@ export const privateRoutes: RouteObject[] = [
 
   {
     path: "/seminar-proposal/detail/:seminarId",
-    element: <AssessSeminarDetail />,
+    element: <SeminarAssessmentDetail />,
   },
   {
     path: "/seminar-hasil/detail/:seminarId",
-    element: <AssessSeminarDetail />,
+    element: <SeminarAssessmentDetail />,
   },
 ];

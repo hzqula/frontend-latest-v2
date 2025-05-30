@@ -37,6 +37,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Lecturer, Seminar } from "@/configs/types";
+import { Link } from "react-router";
 
 interface TableSeminarsScheduledProps {
   seminars: Seminar[];
@@ -154,6 +155,10 @@ const TableSeminarsScheduled = ({
             {paginatedSeminars.length > 0 ? (
               paginatedSeminars.map((seminar: Seminar, index: number) => {
                 const startIndex = (currentPage - 1) * itemsPerPage;
+                const detailPath =
+                  seminar.type === "PROPOSAL"
+                    ? `/seminar-proposal/detail/${seminar.id}`
+                    : `/seminar-hasil/detail/${seminar.id}`;
                 return (
                   <TableRow key={seminar.id}>
                     <TableCell className="text-center font-medium">
@@ -178,13 +183,9 @@ const TableSeminarsScheduled = ({
                     </TableCell>
                     <TableCell>{seminar.room || "TBD"}</TableCell>
                     <TableCell className="text-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewDetails(seminar)}
-                      >
+                      <Button variant="outline" size="sm">
                         <Info size={12} className="mr-1" />
-                        Lihat
+                        <Link to={detailPath}>Lihat</Link>
                       </Button>
 
                       <Button

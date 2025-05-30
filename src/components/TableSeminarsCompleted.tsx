@@ -28,12 +28,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Seminar } from "@/configs/types";
+import { Link } from "react-router";
 
 interface TableSeminarsCompletedProps {
   seminars: Seminar[];
   formatDate: (dateString: string) => string;
   formatTime: (dateString: string) => string;
-  onViewDetails: (seminar: Seminar) => void;
 }
 
 type SortableSeminarKeys = "student" | "time";
@@ -42,7 +42,6 @@ const TableSeminarsCompleted = ({
   seminars,
   formatDate,
   formatTime,
-  onViewDetails,
 }: TableSeminarsCompletedProps) => {
   const [sortConfig, setSortConfig] = useState<{
     key: SortableSeminarKeys | "";
@@ -143,6 +142,11 @@ const TableSeminarsCompleted = ({
             {paginatedSeminars.length > 0 ? (
               paginatedSeminars.map((seminar: Seminar, index: number) => {
                 const startIndex = (currentPage - 1) * itemsPerPage;
+                // Tentukan rute berdasarkan tipe seminar
+                const detailPath =
+                  seminar.type === "PROPOSAL"
+                    ? `/seminar-proposal/detail/${seminar.id}`
+                    : `/seminar-hasil/detail/${seminar.id}`;
                 return (
                   <TableRow key={seminar.id} className="border-b border-border">
                     <TableCell className="text-center font-medium">
@@ -173,13 +177,9 @@ const TableSeminarsCompleted = ({
                       {seminar.room || "TBD"}
                     </TableCell>
                     <TableCell className="text-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-primary-400 text-primary-700"
-                        onClick={() => onViewDetails(seminar)}
-                      >
-                        Lihat
+                      <Button variant="outline" size="sm">
+                        <Info size={12} className="mr-1" />
+                        <Link to={detailPath}>Lihat</Link>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -201,61 +201,63 @@ const TableSeminarsCompleted = ({
 
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {paginatedSeminars.length > 0 ? (
-          paginatedSeminars.map((seminar: Seminar) => (
-            <Card
-              key={seminar.id}
-              className="overflow-hidden gap-2 border-l-4 border-l-jewel-green hover:shadow-md transition-all duration-200"
-            >
-              <CardHeader className="pb-0">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-sm font-medium line-clamp-2">
-                    {seminar.title}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="text-sm">
-                  <div className="flex items-center gap-2">
-                    <User size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">
-                        {seminar.student?.name || "N/A"}
-                      </span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        ({seminar.student?.nim || "N/A"})
-                      </span>
+          paginatedSeminars.map((seminar: Seminar) => {
+            // Tentukan rute berdasarkan tipe seminar
+            const detailPath =
+              seminar.type === "PROPOSAL"
+                ? `/seminar-proposal/detail/${seminar.id}`
+                : `/seminar-hasil/detail/${seminar.id}`;
+            return (
+              <Card
+                key={seminar.id}
+                className="overflow-hidden gap-2 border-l-4 border-l-jewel-green hover:shadow-md transition-all duration-200"
+              >
+                <CardHeader className="pb-0">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-sm font-medium line-clamp-2">
+                      {seminar.title}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <div className="text-sm">
+                    <div className="flex items-center gap-2">
+                      <User size={12} className="text-primary-600" />
+                      <div>
+                        <span className="text-xs">
+                          {seminar.student?.name || "N/A"}
+                        </span>
+                        <span className="text-muted-foreground text-xs ml-2">
+                          ({seminar.student?.nim || "N/A"})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar size={12} className="text-primary-600" />
+                      <div>
+                        <span className="text-xs">
+                          {formatDate(seminar.time)}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          Jam {formatTime(seminar.time)} WIB
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin size={12} className="text-primary-600" />
+                      <span className="text-xs">{seminar.room || "TBD"}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">
-                        {formatDate(seminar.time)}
-                      </span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        Jam {formatTime(seminar.time)} WIB
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={12} className="text-primary-600" />
-                    <span className="text-xs">{seminar.room || "TBD"}</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-0 flex justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onViewDetails(seminar)}
-                >
-                  <Info size={12} className="mr-1" />
-                  Lihat
-                </Button>
-              </CardFooter>
-            </Card>
-          ))
+                </CardContent>
+                <CardFooter className="pt-0 flex justify-between gap-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Info size={12} className="mr-1" />
+                    <Link to={detailPath}>Lihat</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })
         ) : (
           <div className="p-4 text-center text-primary-600 bg-background rounded-md border">
             Belum ada seminar yang tersedia.

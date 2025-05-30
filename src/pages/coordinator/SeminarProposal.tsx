@@ -319,7 +319,6 @@ const CoordinatorSeminarProposal = () => {
               seminars={filteredScheduledSeminars}
               formatDate={formatDate}
               formatTime={formatTime}
-              onViewDetails={openDetailsModal}
               onReschedule={openRescheduleModal}
               token={token}
               lecturers={lecturers}
@@ -332,7 +331,6 @@ const CoordinatorSeminarProposal = () => {
               seminars={filteredCompletedSeminars}
               formatDate={formatDate}
               formatTime={formatTime}
-              onViewDetails={openDetailsModal}
             />
           </TabsContent>
         </Tabs>

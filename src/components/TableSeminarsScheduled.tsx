@@ -43,8 +43,7 @@ interface TableSeminarsScheduledProps {
   seminars: Seminar[];
   formatDate: (dateString: string) => string;
   formatTime: (dateString: string) => string;
-  onViewDetails: (seminar: Seminar) => void;
-  onReschedule: (seminar: Seminar) => void; // Tambahkan props ini
+  onReschedule: (seminar: Seminar) => void;
   token: string;
   lecturers: Lecturer[];
 }
@@ -55,8 +54,7 @@ interface TableSeminarsScheduledProps {
   seminars: Seminar[];
   formatDate: (dateString: string) => string;
   formatTime: (dateString: string) => string;
-  onViewDetails: (seminar: Seminar) => void;
-  onReschedule: (seminar: Seminar) => void; // Tambahkan props ini
+  onReschedule: (seminar: Seminar) => void;
   token: string;
   lecturers: Lecturer[];
 }
@@ -65,7 +63,6 @@ const TableSeminarsScheduled = ({
   seminars,
   formatDate,
   formatTime,
-  onViewDetails,
   onReschedule,
 }: TableSeminarsScheduledProps) => {
   const [sortConfig, setSortConfig] = useState<{
@@ -216,86 +213,88 @@ const TableSeminarsScheduled = ({
 
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {paginatedSeminars.length > 0 ? (
-          paginatedSeminars.map((seminar: Seminar) => (
-            <Card
-              key={seminar.id}
-              className="overflow-hidden gap-2 border-l-4 border-l-jewel-purple hover:shadow-md transition-all duration-200"
-            >
-              <CardHeader className="pb-0">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-sm font-medium line-clamp-2">
-                    {seminar.title}
-                  </CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="text-sm">
-                  <div className="flex items-center gap-2">
-                    <User size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">
-                        {seminar.student?.name || "N/A"}
-                      </span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        ({seminar.student?.nim || "N/A"})
-                      </span>
+          paginatedSeminars.map((seminar: Seminar) => {
+            const detailPath =
+              seminar.type === "PROPOSAL"
+                ? `/seminar-proposal/detail/${seminar.id}`
+                : `/seminar-hasil/detail/${seminar.id}`;
+            return (
+              <Card
+                key={seminar.id}
+                className="overflow-hidden gap-2 border-l-4 border-l-jewel-purple hover:shadow-md transition-all duration-200"
+              >
+                <CardHeader className="pb-0">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-sm font-medium line-clamp-2">
+                      {seminar.title}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <div className="text-sm">
+                    <div className="flex items-center gap-2">
+                      <User size={12} className="text-primary-600" />
+                      <div>
+                        <span className="text-xs">
+                          {seminar.student?.name || "N/A"}
+                        </span>
+                        <span className="text-muted-foreground text-xs ml-2">
+                          ({seminar.student?.nim || "N/A"})
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar size={12} className="text-primary-600" />
+                      <div>
+                        <span className="text-xs">
+                          {formatDate(seminar.time)}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          Jam {formatTime(seminar.time)} WIB
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin size={12} className="text-primary-600" />
+                      <span className="text-xs">{seminar.room || "TBD"}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">
-                        {formatDate(seminar.time)}
-                      </span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        Jam {formatTime(seminar.time)} WIB
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin size={12} className="text-primary-600" />
-                    <span className="text-xs">{seminar.room || "TBD"}</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-0 flex justify-between gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onViewDetails(seminar)}
-                >
-                  <Info size={12} className="mr-1" />
-                  Lihat
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 bg-env-base"
-                  onClick={() => {
-                    if (seminar.folderId) {
-                      window.open(
-                        `https://drive.google.com/drive/u/4/folders/${seminar.folderId}`,
-                        "_blank"
-                      );
-                    } else {
-                      toast.error("Link Google Drive tidak tersedia.");
-                    }
-                  }}
-                >
-                  Folder
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => onReschedule(seminar)}
-                >
-                  <Edit size={12} className="mr-1" />
-                  Reschedule
-                </Button>
-              </CardFooter>
-            </Card>
-          ))
+                </CardContent>
+                <CardFooter className="pt-0 flex justify-between gap-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Info size={12} className="mr-1" />
+                    <Link to={detailPath}>Lihat</Link>
+                    Lihat
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-env-base"
+                    onClick={() => {
+                      if (seminar.folderId) {
+                        window.open(
+                          `https://drive.google.com/drive/u/4/folders/${seminar.folderId}`,
+                          "_blank"
+                        );
+                      } else {
+                        toast.error("Link Google Drive tidak tersedia.");
+                      }
+                    }}
+                  >
+                    Folder
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => onReschedule(seminar)}
+                  >
+                    <Edit size={12} className="mr-1" />
+                    Reschedule
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })
         ) : (
           <div className="p-4 text-center text-primary-600 bg-background rounded-md border">
             Belum ada seminar yang tersedia.

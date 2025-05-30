@@ -60,13 +60,16 @@ export interface RegisterSeminar {
 }
 
 export interface Student {
+  id: number;
   nim: string;
   name: string;
   semester?: number;
+  phoneNumber?: string;
   profilePicture?: string;
 }
 
 export interface Lecturer {
+  id: number;
   nip: string;
   name: string;
   phoneNumber?: string;
@@ -74,11 +77,12 @@ export interface Lecturer {
 }
 
 export interface LecturerSeminarData {
+  id: number;
   name: string;
   nip: string;
   advised: number;
   assessed: number;
-  phoneNumber: number | null;
+  phoneNumber?: string;
   profilePicture?: string;
 }
 

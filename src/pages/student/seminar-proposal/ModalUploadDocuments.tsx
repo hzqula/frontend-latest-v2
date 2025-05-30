@@ -221,6 +221,7 @@ const ModalUploadDocuments = ({
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
+                    Simpan
                   </Button>
                 </div>
 

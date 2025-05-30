@@ -10,11 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Seminar, Lecturer, LecturerSeminarData } from "@/configs/types";
+import {
+  Seminar,
+  Lecturer,
+  LecturerSeminarData,
+} from "@/configs/types";
 import CoordinatorLayout from "@/components/layouts/CoordinatorLayout";
-import { File, Folder, User, Users, UsersRound } from "lucide-react";
+import { File, Folder, Users, UsersRound } from "lucide-react";
 import LineChartSeminars from "@/components/LineChartSeminars";
 import TableLecturersDistribution from "@/components/TableLecturersDistribution";
+import TableStudentsDistribution from "@/components/TableStudentsDistribution";
 
 const CoordinatorDashboard = () => {
   const { user, token } = useAuth();
@@ -169,20 +174,19 @@ const CoordinatorDashboard = () => {
           </CardFooter>
         </Card>
 
-        <Card className="bg-white sm:col-span-2 overflow-hidden">
-          <CardHeader className="bg-env-darker">
-            <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
-              Tren Seminar
+        <Card className="bg-white sm:col-span-2 gap-0 border border-border">
+          <CardHeader>
+            <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary">
+              Mahasiswa
             </CardTitle>
-            <CardDescription className="text-primary-foreground text-sm">
-              Jumlah seminar dalam satu bulan
+            <CardDescription className="text-muted-foreground text-sm">
+              Mahasiswa TA yang terdaftar di sistem
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <LineChartSeminars seminars={seminars} />
+          <CardContent className="p-0">
+            <TableStudentsDistribution data={students} />
           </CardContent>
         </Card>
-
         <Card className="bg-white sm:col-span-2 gap-0 border border-border">
           <CardHeader>
             <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary">
@@ -194,53 +198,22 @@ const CoordinatorDashboard = () => {
           </CardHeader>
           <CardContent className="p-0">
             <TableLecturersDistribution data={lecturerSeminarData} />
-            <div className="grid grid-cols-1 gap-4 md:hidden">
-              {lecturerSeminarData.length > 0 ? (
-                lecturerSeminarData.map((lecturer, index) => (
-                  <Card
-                    key={index}
-                    className="overflow-hidden gap-2 border-l-4 border-l-jewel-blue hover:shadow-md transition-all duration-200"
-                  >
-                    <CardHeader className="pb-0">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-sm font-medium line-clamp-2">
-                          {lecturer.name}
-                        </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="text-sm">
-                        <div className="flex items-center gap-2">
-                          <User size={12} className="text-primary-600" />
-                          <div>
-                            <span className="text-xs">Seminar Dibimbing</span>
-                            <span className="text-muted-foreground text-xs ml-2">
-                              {lecturer.advised}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <User size={12} className="text-primary-600" />
-                          <div>
-                            <span className="text-xs">Seminar Diuji</span>
-                            <span className="text-muted-foreground text-xs ml-2">
-                              {lecturer.assessed}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="p-4 text-center text-primary-600 bg-background rounded-md border">
-                  Tidak ada seminar yang dijadwalkan saat ini.
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
+      <Card className="bg-white sm:col-span-2 overflow-hidden mt-5">
+        <CardHeader className="bg-env-darker">
+          <CardTitle className="text-xl md:text-2xl -mb-1 font-heading font-bold text-primary-foreground">
+            Tren Seminar
+          </CardTitle>
+          <CardDescription className="text-primary-foreground text-sm">
+            Jumlah seminar dalam satu bulan
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LineChartSeminars seminars={seminars} />
+        </CardContent>
+      </Card>
     </CoordinatorLayout>
   );
 };

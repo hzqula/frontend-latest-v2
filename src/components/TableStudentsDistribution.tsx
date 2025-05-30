@@ -18,39 +18,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LecturerSeminarData } from "@/configs/types";
+import { Student } from "@/configs/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Search,
   ChevronLeft,
   ChevronRight,
   Contact,
+  ListOrdered,
   Copy,
   CopyCheck,
-  User,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
-interface TableLecturersDistributionProps {
-  data: LecturerSeminarData[];
+interface TableStudentsDistributionProps {
+  data: Student[];
 }
 
-const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
+const TableStudentsDistribution: React.FC<TableStudentsDistributionProps> = ({
   data,
 }) => {
-  const [searchLecturer, setSearchLecturer] = useState("");
+  const [searchStudent, setSearchStudent] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [lecturersPerPage, setLecturersPerPage] = useState(10);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [studentsPerPage, setStudentsPerPage] = useState(10);
+  const [copied, setCopied] = useState<string | null>(null); // Keep as string | null
 
-  // Filter lecturers based on search query
-  const filteredLecturers = useMemo(() => {
+  // Filter students based on search query
+  const filteredStudents = useMemo(() => {
     return data.filter(
-      (lecturer) =>
-        lecturer.name?.toLowerCase().includes(searchLecturer.toLowerCase()) ||
-        lecturer.nip?.toLowerCase().includes(searchLecturer.toLowerCase())
+      (student) =>
+        student.name?.toLowerCase().includes(searchStudent.toLowerCase()) ||
+        student.nim?.toLowerCase().includes(searchStudent.toLowerCase()) ||
+        (typeof student.semester === "number" &&
+          student.semester.toString().includes(searchStudent))
     );
-  }, [data, searchLecturer]);
+  }, [data, searchStudent]);
 
   // Handle copy with check for undefined phoneNumber
   const handleCopy = (phoneNumber: string | undefined, id: number | string | null) => {
@@ -62,12 +64,12 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
   };
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredLecturers.length / lecturersPerPage);
-  const indexOfLastLecturer = currentPage * lecturersPerPage;
-  const indexOfFirstLecturer = indexOfLastLecturer - lecturersPerPage;
-  const currentLecturers = filteredLecturers.slice(
-    indexOfFirstLecturer,
-    indexOfLastLecturer
+  const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
   );
 
   // Change page
@@ -92,7 +94,7 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
   // Reset to first page when search changes
   useMemo(() => {
     setCurrentPage(1);
-  }, [searchLecturer]);
+  }, [searchStudent]);
 
   // Calculate page numbers to show
   const getPageNumbers = () => {
@@ -142,16 +144,16 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
           <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Cari dosen berdasarkan nama | NIP | kontak"
+            placeholder="Cari mahasiswa berdasarkan nama | nim | semester"
             className="pl-8"
-            value={searchLecturer}
-            onChange={(e) => setSearchLecturer(e.target.value)}
+            value={searchStudent}
+            onChange={(e) => setSearchStudent(e.target.value)}
           />
         </div>
         <Select
-          value={lecturersPerPage.toString()}
+          value={studentsPerPage.toString()}
           onValueChange={(value) => {
-            setLecturersPerPage(Number(value));
+            setStudentsPerPage(Number(value));
             setCurrentPage(1);
           }}
         >
@@ -173,61 +175,61 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
           <TableHeader>
             <TableRow className="text-xs">
               <TableHead className="text-center">No.</TableHead>
-              <TableHead>Nama Dosen</TableHead>
+              <TableHead>Nama Mahasiswa</TableHead>
+              <TableHead>Semester</TableHead>
               <TableHead>Kontak</TableHead>
-              <TableHead className="text-center">Dibimbing</TableHead>
-              <TableHead className="text-center">Diuji</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentLecturers.length > 0 ? (
-              currentLecturers.map((lecturer, index) => (
+            {currentStudents.length > 0 ? (
+              currentStudents.map((student, index) => (
                 <TableRow
-                  key={lecturer.id || index}
+                  key={student.id || index}
                   className="border-b border-border"
                 >
                   <TableCell className="text-center">
-                    {indexOfFirstLecturer + index + 1}
+                    {indexOfFirstStudent + index + 1}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Avatar>
                         <AvatarImage
                           src={
-                            lecturer.profilePicture
-                              ? lecturer.profilePicture
-                              : `https://robohash.org/${
-                                  lecturer.name || "default"
-                                }`
+                            student.profilePicture
+                              ? student.profilePicture
+                              : `https://robohash.org/${student.name}`
                           }
-                          alt="lecturer-image"
+                          alt="student-image"
                           className="border rounded-full h-8 w-8 md:h-12 md:w-12"
                         />
                         <AvatarFallback className="bg-primary-100 text-env-darker">
-                          {lecturer.name
+                          {student.name
                             ?.split(" ")
                             .map((n) => n[0])
                             .join("") || "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div>{lecturer.name || "N/A"}</div>
+                        <div>{student.name || "N/A"}</div>
                         <div className="text-muted-foreground">
-                          {lecturer.nip || "N/A"}
+                          {student.nim || "N/A"}
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="font-light">
-                    {lecturer.phoneNumber || "N/A"}
+                    {student.semester || "N/A"}
+                  </TableCell>
+                  <TableCell className="font-light">
+                    {student.phoneNumber || "N/A"}
                     <button
                       onClick={() =>
-                        handleCopy(lecturer.phoneNumber, lecturer.id)
+                        handleCopy(student.phoneNumber, student.id)
                       }
                       className="ml-4 p-1 text-xs text-primary-600 hover:text-primary-800 focus:outline-none focus:ring-1 focus:ring-primary-300 rounded"
                       aria-label="Copy phone number"
                     >
-                      {copied === lecturer.id?.toString() ? (
+                      {copied === student.id?.toString() ? (
                         <span className="flex items-center">
                           <CopyCheck className="h-3.5 w-3.5 mr-1" />
                         </span>
@@ -238,23 +240,17 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
                       )}
                     </button>
                   </TableCell>
-                  <TableCell className="text-center">
-                    {lecturer.advised ?? "N/A"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {lecturer.assessed ?? "N/A"}
-                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="p-4 text-center text-muted-foreground"
                 >
-                  {searchLecturer
-                    ? "Tidak ada dosen yang ditemukan."
-                    : "Tidak ada dosen saat ini."}
+                  {searchStudent
+                    ? "Tidak ada mahasiswa yang ditemukan."
+                    : "Tidak ada mahasiswa saat ini."}
                 </TableCell>
               </TableRow>
             )}
@@ -264,58 +260,49 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
 
       {/* Card view for small screens */}
       <div className="grid grid-cols-1 gap-4 md:hidden">
-        {currentLecturers.length > 0 ? (
-          currentLecturers.map((lecturer, index) => (
+        {currentStudents.length > 0 ? (
+          currentStudents.map((student, index) => (
             <Card
-              key={index}
+              key={student.id || index}
               className="overflow-hidden gap-2 border-l-4 border-l-jewel-blue hover:shadow-md transition-all duration-200"
             >
-              <CardHeader className="pb-0">
+              <CardHeader className="pb-0 flex items-center gap-3">
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-sm font-medium line-clamp-2">
-                    {lecturer.name}
+                    {student.name}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="pb-2">
                 <div className="text-sm">
                   <div className="flex items-center gap-2">
+                    <ListOrdered size={12} className="text-primary-600" />
+                    <div>
+                      <span className="text-xs">Semester</span>
+                      <span className="text-muted-foreground text-xs ml-2">
+                        {student.semester || "Tidak ada"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <Contact size={12} className="text-primary-600" />
                     <div>
                       <span className="text-xs">Kontak</span>
                       <span className="text-muted-foreground text-xs ml-2">
-                        {lecturer.phoneNumber || "Tidak ada"}
+                        {student.phoneNumber || "Tidak ada"}
                         <button
                           onClick={() =>
-                            handleCopy(lecturer.phoneNumber, lecturer.id)
+                            handleCopy(student.phoneNumber, student.id)
                           }
                           className="ml-2 p-1 text-xs text-primary-600 hover:text-primary-800 focus:outline-none focus:ring-1 focus:ring-primary-300 rounded"
                           aria-label="Copy phone number"
                         >
-                          {copied === lecturer.id?.toString() ? (
+                          {copied === student.id?.toString() ? (
                             <CopyCheck className="h-3.5 w-3.5" />
                           ) : (
                             <Copy className="h-3.5 w-3.5" />
                           )}
                         </button>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">Seminar Dibimbing</span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        {lecturer.advised}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User size={12} className="text-primary-600" />
-                    <div>
-                      <span className="text-xs">Seminar Diuji</span>
-                      <span className="text-muted-foreground text-xs ml-2">
-                        {lecturer.assessed}
                       </span>
                     </div>
                   </div>
@@ -325,18 +312,20 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
           ))
         ) : (
           <div className="p-4 text-center text-primary-600 bg-background rounded-md border">
-            Tidak ada seminar yang dijadwalkan saat ini.
+            {searchStudent
+              ? "Tidak ada mahasiswa yang ditemukan."
+              : "Tidak ada mahasiswa saat ini."}
           </div>
         )}
       </div>
 
       {/* Pagination Controls */}
-      {filteredLecturers.length > 0 && totalPages > 1 && (
+      {filteredStudents.length > 0 && totalPages > 1 && (
         <div className="flex items-center justify-between px-2 mb-2">
           <div className="text-xs text-muted-foreground">
-            Menampilkan {indexOfFirstLecturer + 1}-
-            {Math.min(indexOfLastLecturer, filteredLecturers.length)} dari{" "}
-            {filteredLecturers.length} dosen
+            Menampilkan {indexOfFirstStudent + 1}-
+            {Math.min(indexOfLastStudent, filteredStudents.length)} dari{" "}
+            {filteredStudents.length} mahasiswa
           </div>
           <div className="flex items-center space-x-1">
             <Button
@@ -386,4 +375,4 @@ const TableLecturersDistribution: React.FC<TableLecturersDistributionProps> = ({
   );
 };
 
-export default TableLecturersDistribution;
+export default TableStudentsDistribution;

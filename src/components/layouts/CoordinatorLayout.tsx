@@ -202,7 +202,7 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-3">
             <div className="text-right hidden sm:block">
-              <p className="text-body-bold text-sm font-semibold truncate max-w-[150px]">
+              <p className="text-body-bold text-sm font-semibold">
                 {user?.profile?.name}
               </p>
               <p className="text-xs text-gray-500 capitalize">{userRole}</p>

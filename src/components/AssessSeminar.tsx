@@ -18,6 +18,8 @@ import {
   PresentationIcon,
   BrainCircuit,
   UserCog,
+  AlertCircle,
+  TriangleAlert,
 } from "lucide-react";
 import AssessmentCriterion from "@/components/AssessmentCriterion";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -391,7 +393,8 @@ const AssessSeminar: React.FC<AssessSeminarProps> = () => {
                   isAdvisor={isAdvisor}
                 />
                 {daysRemaining !== null && (
-                  <Alert className="w-full">
+                  <Alert variant={canUpdate ? "info" : "warning"}>
+                    {canUpdate ? <AlertCircle /> : <TriangleAlert />}
                     <AlertTitle>{canUpdate ? "Info" : "Warning"}</AlertTitle>
                     <AlertDescription>
                       {canUpdate

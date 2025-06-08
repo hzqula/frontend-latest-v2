@@ -1,6 +1,7 @@
+// ModalUploadDocuments.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,7 @@ interface ModalUploadDocumentsProps {
   initialData: Record<string, File | null>;
   uploadedStatus: Record<string, boolean>;
   seminarId: number | null;
+  onDocumentUploaded: () => void;
 }
 
 const ModalUploadDocuments = ({
@@ -64,6 +66,7 @@ const ModalUploadDocuments = ({
   initialData,
   uploadedStatus,
   seminarId,
+  onDocumentUploaded,
 }: ModalUploadDocumentsProps) => {
   const { token } = useAuth();
   const [uploadedDocuments, setUploadedDocuments] =
@@ -72,7 +75,52 @@ const ModalUploadDocuments = ({
     {}
   );
   const [isUploading, setIsUploading] = useState<Record<string, boolean>>({});
-  const [isDragging, setIsDragging] = useState<Record<string, boolean>>({}); // State untuk status drag
+  const [isDragging, setIsDragging] = useState<Record<string, boolean>>({});
+  const [localUploadedStatus, setLocalUploadedStatus] = useState<
+    Record<string, boolean>
+  >(() => {
+    const initialStatus: Record<string, boolean> = {};
+    requiredDocuments.forEach((doc) => {
+      initialStatus[doc.id] = false;
+    });
+    return initialStatus;
+  });
+
+  // Gunakan useRef untuk melacak apakah modal baru saja dibuka
+  const wasOpen = useRef<boolean>(false);
+
+  // Sinkronkan state lokal dengan prop uploadedStatus hanya saat modal baru dibuka
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      const updatedStatus: Record<string, boolean> = {};
+      requiredDocuments.forEach((doc) => {
+        updatedStatus[doc.id] = uploadedStatus[doc.id] ?? false;
+      });
+      setLocalUploadedStatus(updatedStatus);
+      setUploadedDocuments({ ...initialData });
+      console.log(
+        "Test after sync",
+        requiredDocuments.map((document) => updatedStatus[document.id])
+      );
+    }
+    wasOpen.current = open;
+  }, [open, uploadedStatus, initialData]);
+
+  // Log untuk memantau perubahan localUploadedStatus
+  useEffect(() => {
+    console.log(
+      "Test after state update",
+      requiredDocuments.map((document) => localUploadedStatus[document.id])
+    );
+  }, [localUploadedStatus]);
+
+  // Log untuk memantau perubahan uploadedStatus
+  useEffect(() => {
+    console.log(
+      "Test uploadedStatus change",
+      requiredDocuments.map((document) => uploadedStatus[document.id] ?? false)
+    );
+  }, [uploadedStatus]);
 
   const handleFileUpload = (documentId: string, file: File | null) => {
     if (file) {
@@ -85,7 +133,6 @@ const ModalUploadDocuments = ({
     setUploadedDocuments((prev) => ({ ...prev, [documentId]: file }));
   };
 
-  // Event handler untuk drag and drop
   const handleDragOver = (
     e: React.DragEvent<HTMLDivElement>,
     documentId: string
@@ -104,7 +151,7 @@ const ModalUploadDocuments = ({
   ) => {
     e.preventDefault();
     setIsDragging((prev) => ({ ...prev, [documentId]: false }));
-    const file = e.dataTransfer.files[0]; // Ambil file pertama yang di-drop
+    const file = e.dataTransfer.files[0];
     if (file) {
       handleFileUpload(documentId, file);
     }
@@ -119,7 +166,7 @@ const ModalUploadDocuments = ({
     }
 
     const file = uploadedDocuments[documentId];
-    if (!file && !uploadedStatus[documentId]) {
+    if (!file && !localUploadedStatus[documentId]) {
       toast.error("Silakan pilih file terlebih dahulu.");
       return;
     }
@@ -135,7 +182,7 @@ const ModalUploadDocuments = ({
         formData.append("file", file);
       }
 
-      const method = uploadedStatus[documentId] ? "PUT" : "POST";
+      const method = localUploadedStatus[documentId] ? "PUT" : "POST";
       const endpoint = "http://localhost:5500/api/seminars/proposal-documents";
 
       let progress = 0;
@@ -157,13 +204,23 @@ const ModalUploadDocuments = ({
       setUploadProgress((prev) => ({ ...prev, [documentId]: 100 }));
 
       const data = await response.json();
+      console.log("Response data:", data);
+
       if (!response.ok) {
-        throw new Error(data.message || "Gagal mengunggah dokumen.");
+        throw new Error(data.error || "Gagal mengunggah dokumen.");
       }
 
       toast.success("Dokumen berhasil disimpan ke Google Drive!");
-      uploadedStatus[documentId] = true;
+      setLocalUploadedStatus((prev) => {
+        const updated = { ...prev, [documentId]: true };
+        console.log(
+          "Test after upload",
+          requiredDocuments.map((document) => updated[document.id])
+        );
+        return updated;
+      });
       setUploadedDocuments((prev) => ({ ...prev, [documentId]: null }));
+      onDocumentUploaded();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Gagal menyimpan dokumen."
@@ -203,7 +260,7 @@ const ModalUploadDocuments = ({
                     (Maksimal ukuran file: 2MB)
                   </p>
                 </div>
-                {uploadedStatus[document.id] && (
+                {localUploadedStatus[document.id] && (
                   <div className="flex flex-row items-center gap-1">
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
                     <span className="text-xs text-green-600 font-semibold">
@@ -237,7 +294,9 @@ const ModalUploadDocuments = ({
                         disabled={isUploading[document.id]}
                       />
                       <FileEdit className="h-4 w-4 mr-2" />
-                      {uploadedStatus[document.id] ? "Ubah File" : "Pilih File"}
+                      {localUploadedStatus[document.id]
+                        ? "Ubah File"
+                        : "Pilih File"}
                     </label>
                     <Button
                       variant="default"
@@ -247,8 +306,8 @@ const ModalUploadDocuments = ({
                       disabled={
                         isUploading[document.id] ||
                         (!uploadedDocuments[document.id] &&
-                          !uploadedStatus[document.id]) ||
-                        (uploadedStatus[document.id] &&
+                          !localUploadedStatus[document.id]) ||
+                        (localUploadedStatus[document.id] &&
                           !uploadedDocuments[document.id])
                       }
                     >
@@ -272,12 +331,13 @@ const ModalUploadDocuments = ({
                     {uploadedDocuments[document.id]?.name}
                   </div>
                 )}
-                {(isUploading[document.id] || uploadProgress[document.id]) && (
-                  <Progress
-                    value={uploadProgress[document.id] || 0}
-                    className="mt-2"
-                  />
-                )}
+                {isUploading[document.id] &&
+                  uploadProgress[document.id] < 100 && (
+                    <Progress
+                      value={uploadProgress[document.id] || 0}
+                      className="mt-2 bg-env-base"
+                    />
+                  )}
               </div>
             </div>
           ))}

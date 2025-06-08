@@ -28,9 +28,9 @@ const CardAnnouncement = ({
   console.log(visibleBadges);
 
   return (
-    <Card className="py-6 hover:shadow-md transition-all duration-200 border border-env-base/50">
-      <CardContent className="flex flex-col gap-4">
-        <div className="">
+    <Card className="py-6 hover:shadow-md transition-all duration-200 border border-env-base/50 flex flex-col min-h-[400px]">
+      <CardContent className="flex flex-col gap-4 flex-grow">
+        <div className="flex flex-col gap-2">
           {announcement.image && (
             <img
               src={announcement.image}
@@ -38,8 +38,8 @@ const CardAnnouncement = ({
               className="w-full h-40 object-cover rounded-sm mb-3 border"
             />
           )}
-          <div className="flex items-center  mb-2">
-            <div className="flex-2">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex-1">
               <h3 className="font-heading text-env-darker font-medium text-xs sm:text-sm line-clamp-1">
                 {announcement.title}
               </h3>
@@ -54,22 +54,24 @@ const CardAnnouncement = ({
           <p className="text-muted-foreground font-light text-xs sm:text-sm line-clamp-3 mb-2">
             {announcement.content}
           </p>
+          <div className="flex gap-2 items-center">
+            {visibleBadges.map((visibility, index) => (
+              <Badge key={index} className="lowercase">
+                {visibility}
+              </Badge>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 items-center">
-          {visibleBadges.map((visibility, index) => (
-            <Badge key={index} className="lowercase">
-              {visibility}
-            </Badge>
-          ))}
+        <div className="mt-auto">
+          <Button
+            variant="default"
+            size="sm"
+            className="w-full text-primary-foreground text-xs sm:text-sm"
+            onClick={() => onManage(announcement)}
+          >
+            Kelola
+          </Button>
         </div>
-        <Button
-          variant="default"
-          size="sm"
-          className="w-full text-primary-foreground text-xs sm:text-sm"
-          onClick={() => onManage(announcement)}
-        >
-          Kelola
-        </Button>
       </CardContent>
     </Card>
   );

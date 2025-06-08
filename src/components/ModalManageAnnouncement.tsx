@@ -128,8 +128,8 @@ const ModalManageAnnouncement = ({
         toast.success("Pengumuman berhasil diperbarui!");
         onClose();
       } else {
-        setError(response.data.message);
-        toast.error(response.data.message || "Gagal memperbarui pengumuman");
+        setError(response.data.error);
+        toast.error(response.data.error || "Gagal memperbarui pengumuman");
       }
     } catch (err: any) {
       const errorMessage =
@@ -168,8 +168,8 @@ const ModalManageAnnouncement = ({
         toast.success("Pengumuman berhasil dihapus!");
         onClose();
       } else {
-        setError(response.data.message);
-        toast.error(response.data.message || "Gagal menghapus pengumuman");
+        setError(response.data.error);
+        toast.error(response.data.error || "Gagal menghapus pengumuman");
       }
     } catch (err: any) {
       const errorMessage =

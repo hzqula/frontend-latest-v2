@@ -78,7 +78,7 @@ const UpdateProfile: React.FC = () => {
         return;
       }
 
-      toast.success(data.message || "Profil berhasil diperbarui!");
+      toast.success(data.error || "Profil berhasil diperbarui!");
       navigate("/profile"); // Redirect ke halaman profil setelah sukses
     } catch (error) {
       console.error("Error updating profile:", error);

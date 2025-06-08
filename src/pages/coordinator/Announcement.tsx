@@ -26,7 +26,8 @@ const Announcement = () => {
 
   const [announcements, setAnnouncements] = useState<AnnouncementProps[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementProps | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] =
+    useState<AnnouncementProps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,10 +56,13 @@ const Announcement = () => {
       if (response.data.success) {
         setAnnouncements(response.data.announcements);
         setError(null);
-        console.log("Announcements fetched successfully:", response.data.announcements);
+        console.log(
+          "Announcements fetched successfully:",
+          response.data.announcements
+        );
       } else {
-        setError(response.data.message || "Gagal mengambil pengumuman");
-        console.log("Failed to fetch announcements:", response.data.message);
+        setError(response.data.error || "Gagal mengambil pengumuman");
+        console.log("Failed to fetch announcements:", response.data.error);
       }
     } catch (err: any) {
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -96,8 +100,13 @@ const Announcement = () => {
     }
 
     if (userRole !== "COORDINATOR") {
-      console.log("Redirecting to login from Announcement - unauthorized role:", userRole);
-      setError("Access denied: You do not have permission to access this page.");
+      console.log(
+        "Redirecting to login from Announcement - unauthorized role:",
+        userRole
+      );
+      setError(
+        "Access denied: You do not have permission to access this page."
+      );
       navigate("/login");
       return;
     }
@@ -185,7 +194,9 @@ const Announcement = () => {
   return (
     <CoordinatorLayout>
       <div className="flex flex-col mb-4">
-        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">Pengumuman</h1>
+        <h1 className="text-xl md:text-4xl font-heading font-black text-env-darker">
+          Pengumuman
+        </h1>
         <p className="text-primary md:text-base text-sm">
           Di sini tempat Anda menambah, memperbarui, dan menghapus pengumuman
         </p>
@@ -228,7 +239,11 @@ const Announcement = () => {
             </SelectTrigger>
             <SelectContent>
               {visibilityOptions.map((option) => (
-                <SelectItem key={option} value={option} className="text-xs sm:text-sm">
+                <SelectItem
+                  key={option}
+                  value={option}
+                  className="text-xs sm:text-sm"
+                >
                   {option === "all" ? "Semua Visibilitas" : option}
                 </SelectItem>
               ))}

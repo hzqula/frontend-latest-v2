@@ -204,12 +204,12 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Gagal mengirim OTP");
-        setFormErrors((prev) => ({ ...prev, general: data.message }));
+        toast.error(data.error || "Gagal mengirim OTP");
+        setFormErrors((prev) => ({ ...prev, general: data.error }));
         return;
       }
 
-      toast.success(data.message || "OTP telah dikirim ke email Anda");
+      toast.success(data.error || "OTP telah dikirim ke email Anda");
       setCurrentStep(2);
       startResendCountdown();
     } catch (error) {
@@ -251,8 +251,8 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Gagal memverifikasi OTP");
-        setFormErrors((prev) => ({ ...prev, general: data.message }));
+        toast.error(data.error || "Gagal memverifikasi OTP");
+        setFormErrors((prev) => ({ ...prev, general: data.error }));
         setCurrentStep(1);
         return;
       }
@@ -267,7 +267,7 @@ const Register: React.FC = () => {
       }
 
       // Setelah delay selesai, lanjutkan dengan toast dan perpindahan step
-      toast.success(data.message || "OTP berhasil diverifikasi!");
+      toast.success(data.error || "OTP berhasil diverifikasi!");
       setCurrentStep(3);
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);
@@ -333,14 +333,14 @@ const Register: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || "Gagal mendaftar");
-        setFormErrors((prev) => ({ ...prev, general: data.message }));
+        toast.error(data.error || "Gagal mendaftar");
+        setFormErrors((prev) => ({ ...prev, general: data.error }));
         return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay 2 detik
       localStorage.setItem("token", data.token);
-      toast.success(data.message || "Pendaftaran berhasil!");
+      toast.success(data.error || "Pendaftaran berhasil!");
       navigate("/login", { state: { registrationSuccess: true } });
     } catch (error) {
       console.error("Terjadi kesalahan: ", error);

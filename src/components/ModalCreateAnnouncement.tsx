@@ -114,8 +114,8 @@ const ModalCreateAnnouncement = ({
         form.reset();
         setImagePreview(null);
       } else {
-        setError(response.data.message);
-        toast.error(response.data.message || "Gagal membuat pengumuman");
+        setError(response.data.error);
+        toast.error(response.data.error || "Gagal membuat pengumuman");
       }
     } catch (err: any) {
       const errorMessage =

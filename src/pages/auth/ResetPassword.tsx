@@ -9,30 +9,37 @@ import { Label } from "../../components/ui/label";
 import { Stepper } from "../../components/Stepper";
 import { ArrowLeft, Mail, KeyRound, EyeIcon, EyeOffIcon } from "lucide-react";
 
-
 const emailSchema = z.object({
-  email: z.string()
+  email: z
+    .string()
     .email("Format email tidak valid")
-    .refine((email) =>
-      email.endsWith("@student.unri.ac.id") ||
-      email.endsWith("@lecturer.unri.ac.id"),
+    .refine(
+      (email) =>
+        email.endsWith("@student.unri.ac.id") ||
+        email.endsWith("@lecturer.unri.ac.id"),
       {
-        message: "Gunakan email kampus UR (@student.unri.ac.id atau @lecturer.unri.ac.id)",
+        message:
+          "Gunakan email kampus UR (@student.unri.ac.id atau @lecturer.unri.ac.id)",
       }
     ),
 });
 
 const otpSchema = z.object({
-  otp: z.string().length(6, "OTP harus 6 digit").regex(/^\d+$/, "OTP hanya angka"),
+  otp: z
+    .string()
+    .length(6, "OTP harus 6 digit")
+    .regex(/^\d+$/, "OTP hanya angka"),
 });
 
-const passwordSchema = z.object({
-  newPassword: z.string().min(6, "Password minimal 6 karakter"),
-  confirmNewPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmNewPassword, {
-  message: "Konfirmasi password tidak cocok",
-  path: ["confirmNewPassword"],
-});
+const passwordSchema = z
+  .object({
+    newPassword: z.string().min(6, "Password minimal 6 karakter"),
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Konfirmasi password tidak cocok",
+    path: ["confirmNewPassword"],
+  });
 
 type FormErrors = {
   email?: string;
@@ -101,7 +108,7 @@ export default function ResetPassword() {
 
       if (!response.ok) {
         const data = await response.json();
-        toast.error(data.message || "Gagal mengirim OTP.");
+        toast.error(data.error || "Gagal mengirim OTP.");
         setIsLoading(false);
         return;
       }
@@ -131,15 +138,18 @@ export default function ResetPassword() {
         return;
       }
 
-      const response = await fetch("http://localhost:5500/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
+      const response = await fetch(
+        "http://localhost:5500/api/auth/verify-otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp }),
+        }
+      );
 
       if (!response.ok) {
         const data = await response.json();
-        toast.error(data.message || "OTP tidak valid.");
+        toast.error(data.error || "OTP tidak valid.");
         setIsLoading(false);
         return;
       }
@@ -160,7 +170,10 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      const result = passwordSchema.safeParse({ newPassword, confirmNewPassword });
+      const result = passwordSchema.safeParse({
+        newPassword,
+        confirmNewPassword,
+      });
       if (!result.success) {
         const errors = result.error.flatten().fieldErrors;
         setFormErrors({
@@ -179,7 +192,7 @@ export default function ResetPassword() {
 
       if (!response.ok) {
         const data = await response.json();
-        toast.error(data.message || "Gagal mereset password.");
+        toast.error(data.error || "Gagal mereset password.");
         setIsLoading(false);
         return;
       }
@@ -198,7 +211,12 @@ export default function ResetPassword() {
     switch (currentStep) {
       case 1:
         return (
-          <form onSubmit={(e) => { e.preventDefault(); sendOtp(); }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendOtp();
+            }}
+          >
             <div className="grid gap-4">
               <Label htmlFor="email">Email </Label>
               <div className="relative">
@@ -235,7 +253,9 @@ export default function ResetPassword() {
                   inputMode="numeric"
                   placeholder="6 digit OTP"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   className="pl-10"
                 />
               </div>
@@ -255,7 +275,9 @@ export default function ResetPassword() {
                 disabled={countdown > 0 || isLoading}
                 className="text-primary mt-2"
               >
-                {countdown > 0 ? `Kirim ulang dalam ${countdown}s` : "Kirim Ulang OTP"}
+                {countdown > 0
+                  ? `Kirim ulang dalam ${countdown}s`
+                  : "Kirim Ulang OTP"}
               </Button>
             </div>
           </form>
@@ -280,7 +302,11 @@ export default function ResetPassword() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOffIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
                 </button>
               </div>
               {formErrors.newPassword && (
@@ -301,11 +327,17 @@ export default function ResetPassword() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                  {showConfirmPassword ? (
+                    <EyeOffIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
                 </button>
               </div>
               {formErrors.confirmNewPassword && (
-                <p className="text-red-500 text-sm">{formErrors.confirmNewPassword}</p>
+                <p className="text-red-500 text-sm">
+                  {formErrors.confirmNewPassword}
+                </p>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Memproses..." : "Reset Password"}
@@ -327,10 +359,10 @@ export default function ResetPassword() {
             Reset Password
           </h2>
         </div>
-  
+
         <Stepper steps={steps} currentStep={currentStep} className="mb-8" />
         {renderStep()}
-  
+
         {currentStep > 1 && (
           <Button
             type="button"
@@ -346,5 +378,4 @@ export default function ResetPassword() {
       </div>
     </div>
   );
-  
-} 
+}

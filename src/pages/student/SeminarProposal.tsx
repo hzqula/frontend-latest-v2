@@ -1,4 +1,3 @@
-// /student/SeminarProposal.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,8 +30,8 @@ import { Link } from "react-router";
 import studentImg from "@/assets/img/student-ill.png";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { Lecturer, RegisterSeminar } from "@/configs/types";
-import ModalDetailResearch from "./seminar-proposal/ModalDetailResearch";
-import ModalUploadDocuments from "./seminar-proposal/ModalUploadDocuments";
+import ModalDetailResearch from "@/components/ModalDetailResearch";
+import ModalUploadDocuments from "@/components/ModalUploadDocuments";
 import SeminarStepDetail from "@/components/SeminarStepDetail";
 
 const StudentSeminarProposal = () => {
@@ -75,6 +74,7 @@ const StudentSeminarProposal = () => {
 
   const [modalResearchDetailOpen, setModalResearchDetailOpen] = useState(false);
   const [modalDocumentUploadOpen, setModalDocumentUploadOpen] = useState(false);
+  const [shouldRefetch, setShouldRefetch] = useState(false); // State untuk melacak apakah perlu refetch
 
   if (!user || !user.profile?.nim) {
     return <div>Loading...</div>;
@@ -82,7 +82,6 @@ const StudentSeminarProposal = () => {
 
   useEffect(() => {
     const seminarData = seminarQuery.data;
-    console.log("Fetch Seminar Data:", seminarData);
 
     if (seminarData) {
       setSeminar({
@@ -159,7 +158,7 @@ const StudentSeminarProposal = () => {
         },
         time: seminarData.time,
         room: seminarData.room,
-        assessors: seminarData.assessors.map(
+        assessors: seminarData.advisors.map(
           (assessor: { lecturer?: Lecturer }) => ({
             lecturerNIP: assessor.lecturer?.nip,
             lecturerName: assessor.lecturer?.name,
@@ -175,12 +174,15 @@ const StudentSeminarProposal = () => {
       else if (seminar.status === "COMPLETED") setCurrentStep("step4");
       else setCurrentStep("step1");
     }
-  }, [seminarQuery.data, modalDocumentUploadOpen]);
-  console.log("Current Step:", currentStep);
-  console.log("Seminar Status:", seminar.status);
+  }, [seminarQuery.data]);
 
-  console.log("Seminar", seminar);
-  console.log("Dospem: ", seminar.advisors);
+  // Efek untuk memicu refetch ketika modal ditutup
+  useEffect(() => {
+    if (!modalDocumentUploadOpen && shouldRefetch) {
+      seminarQuery.refetch(); // Refetch data seminar setelah modal ditutup
+      setShouldRefetch(false); // Reset status refetch
+    }
+  }, [modalDocumentUploadOpen, shouldRefetch, seminarQuery]);
 
   const allDocumentsUploaded = () =>
     Object.values(seminar.documents).every((doc) => doc.uploaded);
@@ -248,6 +250,11 @@ const StudentSeminarProposal = () => {
       SCHEDULED: 75,
       COMPLETED: 100,
     }[seminar.status!] || 0;
+
+  // Callback untuk menangani dokumen yang berhasil diunggah
+  const handleDocumentUploaded = () => {
+    setShouldRefetch(true); // Tandai bahwa refetch diperlukan saat modal ditutup
+  };
 
   return (
     <StudentLayout>
@@ -567,7 +574,6 @@ const StudentSeminarProposal = () => {
                 onClick={() => setModalDocumentUploadOpen(true)}
                 disabled={seminar.status === "SCHEDULED"}
                 variant="outline"
-                className="border-2 border-primary text-env-darker w-full"
               >
                 {allDocumentsUploaded() ? "Perbarui Dokumen" : "Unggah Dokumen"}
               </Button>
@@ -597,7 +603,6 @@ const StudentSeminarProposal = () => {
                   onClick={() => setModalDocumentUploadOpen(true)}
                   disabled={seminar.status === "SCHEDULED"}
                   variant="outline"
-                  className="border-2 border-primary text-env-darker"
                 >
                   {allDocumentsUploaded()
                     ? "Perbarui Dokumen"
@@ -659,6 +664,7 @@ const StudentSeminarProposal = () => {
           ])
         )}
         seminarId={seminar.id}
+        onDocumentUploaded={handleDocumentUploaded}
       />
     </StudentLayout>
   );

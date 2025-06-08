@@ -26,7 +26,7 @@ interface LineChartSeminarsProps {
 
 const LineChartSeminars: React.FC<LineChartSeminarsProps> = ({ seminars }) => {
   const processSeminarData = (seminars: Seminar[]) => {
-    const currentDate = new Date("2025-05-16T20:36:00Z");
+    const currentDate = new Date();
     const months = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date(currentDate);

@@ -35,7 +35,7 @@ const LineChartLecturerSeminars: React.FC<LineChartLecturerSeminarsProps> = ({
 
   // Memproses data seminar untuk 6 bulan terakhir
   const processSeminarData = (seminars: Seminar[]) => {
-    const currentDate = new Date("2025-05-21T17:16:00Z"); // Tanggal saat ini
+    const currentDate = new Date();
     const months = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date(currentDate);

@@ -1,7 +1,7 @@
-// SeminarStepDetail.tsx
 "use client";
 
 import axios from "axios";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, TriangleAlert } from "lucide-react";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { RegisterSeminar } from "@/configs/types";
 
@@ -38,13 +38,23 @@ const SeminarStepDetail = ({
   const cardDescription = isStep3
     ? "Lihat detail seminar Anda dan unduh undangan seminar setelah jadwal ditentukan."
     : "Lihat detail seminar Anda dan unduh Berita Acara setelah seminar selesai.";
-  const alertDescription = isStep3
-    ? "Undangan seminar akan tersedia setelah koordinator menentukan jadwal dan penguji."
+
+  // Definisikan judul dan deskripsi untuk alert
+  const alertInfoTitle = "Informasi";
+  const alertInfoDescription = isStep3
+    ? "Undangan seminar akan tersedia setelah Koordinator menentukan jadwal dan penguji."
     : "Berita Acara akan tersedia setelah seminar selesai dan dinilai oleh semua dosen pembimbing dan penguji.";
+  const alertWarningTitle = "Peringatan"; // Hanya untuk step3
+  const alertWarningDescription = isStep3
+    ? "Silakan menyerahkan hardcopy dari berkas-berkas yang di-upload di aplikasi ke Koordinator, agar seminar Anda dapat dijadwalkan."
+    : "";
+
   const downloadButtonText = isStep3 ? "Unduh Undangan" : "Unduh Berita Acara";
   const downloadDisabled = isStep3
     ? status !== "SCHEDULED"
     : status !== "COMPLETED";
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const formatDate = (dateString: string | null): string => {
     if (!dateString) return "Belum ditentukan";
@@ -68,6 +78,12 @@ const SeminarStepDetail = ({
 
   // Fungsi untuk menangani pengunduhan undangan (step3)
   const handlePrintInvitation = async (seminar: RegisterSeminar) => {
+    if (isDownloading) {
+      toast.info("Sedang memproses undangan, mohon tunggu...");
+      return;
+    }
+
+    setIsDownloading(true);
     try {
       const dateObj = seminar.time ? new Date(seminar.time) : null;
       const hari = dateObj
@@ -136,11 +152,19 @@ const SeminarStepDetail = ({
         console.error("Unexpected error:", error);
         toast.error("Terjadi kesalahan tak terduga. Silakan coba lagi.");
       }
+    } finally {
+      setIsDownloading(false);
     }
   };
 
   // Fungsi untuk menangani pengunduhan berita acara (step4)
   const handlePrintReport = async (seminar: RegisterSeminar) => {
+    if (isDownloading) {
+      toast.info("Sedang memproses berita acara, mohon tunggu...");
+      return;
+    }
+
+    setIsDownloading(true);
     try {
       const dateObj = seminar.time ? new Date(seminar.time) : null;
       const hari = dateObj
@@ -210,6 +234,8 @@ const SeminarStepDetail = ({
         console.error("Unexpected error:", error);
         toast.error("Terjadi kesalahan tak terduga. Silakan coba lagi.");
       }
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -348,10 +374,17 @@ const SeminarStepDetail = ({
             </div>
           </div>
 
-          <Alert variant="default">
+          {isStep3 && (
+            <Alert variant="warning">
+              <TriangleAlert />
+              <AlertTitle>{alertWarningTitle}</AlertTitle>
+              <AlertDescription>{alertWarningDescription}</AlertDescription>
+            </Alert>
+          )}
+          <Alert variant="info">
             <AlertCircle />
-            <AlertTitle>Informasi</AlertTitle>
-            <AlertDescription>{alertDescription}</AlertDescription>
+            <AlertTitle>{alertInfoTitle}</AlertTitle>
+            <AlertDescription>{alertInfoDescription}</AlertDescription>
           </Alert>
         </div>
       </CardContent>
@@ -362,11 +395,11 @@ const SeminarStepDetail = ({
               ? handlePrintInvitation(seminar)
               : handlePrintReport(seminar)
           }
-          disabled={downloadDisabled}
+          disabled={downloadDisabled || isDownloading}
           variant="outline"
           className="border-2 w-full border-primary text-env-darker"
         >
-          {downloadButtonText}
+          {isDownloading ? "Mengunduh..." : downloadButtonText}
         </Button>
         <div className="w-full gap-2 flex items-center">
           <Button
@@ -398,11 +431,11 @@ const SeminarStepDetail = ({
                 ? handlePrintInvitation(seminar)
                 : handlePrintReport(seminar)
             }
-            disabled={downloadDisabled}
+            disabled={downloadDisabled || isDownloading}
             variant="outline"
             className="border-2 border-primary text-env-darker"
           >
-            {downloadButtonText}
+            {isDownloading ? "Mengunduh..." : downloadButtonText}
           </Button>
           {isStep3 && <Button onClick={onNextStep}>Lanjut</Button>}
         </div>

@@ -12,6 +12,7 @@ import Announcement from "@/pages/coordinator/Announcement";
 import UpdateProfile from "@/pages/student/UpdateProfile";
 import AssessSeminar from "@/components/AssessSeminar";
 import SeminarAssessmentDetail from "@/pages/coordinator/SeminarAssessmentDetail";
+import ExternalAssessmentLink from "@/pages/coordinator/ExternalAssessmentLink";
 
 export const publicRoutes: RouteObject[] = [
   { path: "/", element: <Landing /> },
@@ -61,5 +62,9 @@ export const privateRoutes: RouteObject[] = [
   {
     path: "/seminar-hasil/detail/:seminarId",
     element: <SeminarAssessmentDetail />,
+  },
+  {
+    path: "/link-penilaian-eksternal",
+    element: <ExternalAssessmentLink />,
   },
 ];

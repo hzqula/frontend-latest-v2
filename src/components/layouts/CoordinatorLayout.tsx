@@ -10,6 +10,7 @@ import {
   BookText,
   Logs,
   Combine,
+  Route,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router";
@@ -88,6 +89,11 @@ const CoordinatorLayout: React.FC<CoordinatorLayoutProps> = ({ children }) => {
       icon: Logs,
       path: "/log-keamanan",
       label: "Log Leamanan",
+    },
+    {
+      icon: Route,
+      path: "/link-penilaian-eksternal",
+      label: "Link Penilaian Eksternal",
     },
   ];
 

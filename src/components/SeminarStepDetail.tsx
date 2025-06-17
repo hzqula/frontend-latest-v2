@@ -39,12 +39,11 @@ const SeminarStepDetail = ({
     ? "Lihat detail seminar Anda dan unduh undangan seminar setelah jadwal ditentukan."
     : "Lihat detail seminar Anda dan unduh Berita Acara setelah seminar selesai.";
 
-  // Definisikan judul dan deskripsi untuk alert
   const alertInfoTitle = "Informasi";
   const alertInfoDescription = isStep3
     ? "Undangan seminar akan tersedia setelah Koordinator menentukan jadwal dan penguji."
     : "Berita Acara akan tersedia setelah seminar selesai dan dinilai oleh semua dosen pembimbing dan penguji.";
-  const alertWarningTitle = "Peringatan"; // Hanya untuk step3
+  const alertWarningTitle = "Peringatan";
   const alertWarningDescription = isStep3
     ? "Silakan menyerahkan hardcopy dari berkas-berkas yang di-upload di aplikasi ke Koordinator, agar seminar Anda dapat dijadwalkan."
     : "";
@@ -74,9 +73,6 @@ const SeminarStepDetail = ({
     });
   };
 
-  console.log("Seminar: ", seminar);
-
-  // Fungsi untuk menangani pengunduhan undangan (step3)
   const handlePrintInvitation = async (seminar: RegisterSeminar) => {
     if (isDownloading) {
       toast.info("Sedang memproses undangan, mohon tunggu...");
@@ -119,8 +115,6 @@ const SeminarStepDetail = ({
         type: seminar.type,
       };
 
-      console.log("Data sent to backend:", data);
-
       const response = await axios.post(
         "http://localhost:5500/api/documents/generate-seminar-invitation",
         data,
@@ -131,8 +125,6 @@ const SeminarStepDetail = ({
           responseType: "blob",
         }
       );
-
-      console.log("Invitation Response:", response);
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement("a");
@@ -157,7 +149,6 @@ const SeminarStepDetail = ({
     }
   };
 
-  // Fungsi untuk menangani pengunduhan berita acara (step4)
   const handlePrintReport = async (seminar: RegisterSeminar) => {
     if (isDownloading) {
       toast.info("Sedang memproses berita acara, mohon tunggu...");
@@ -200,8 +191,6 @@ const SeminarStepDetail = ({
         type: seminar.type,
       };
 
-      console.log("Data sent to backend for event report:", data);
-
       const response = await axios.post(
         "http://localhost:5500/api/documents/generate-event-report",
         data,
@@ -212,9 +201,6 @@ const SeminarStepDetail = ({
           responseType: "blob",
         }
       );
-
-      console.log("Event Report Response:", response);
-      console.log("Seminar Data:", seminar);
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement("a");
@@ -284,34 +270,42 @@ const SeminarStepDetail = ({
               <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">
                 Dosen Pembimbing
               </h3>
-              <div className="flex flex-col gap-2">
-                {seminar.advisors.map((advisor, index) => (
-                  <div
-                    key={index}
-                    className="flex border-env-light rounded-md items-center space-x-2"
-                  >
-                    <Avatar>
-                      <AvatarImage
-                        src={
-                          advisor.profilePicture
-                            ? advisor.profilePicture
-                            : `https://robohash.org/${advisor.lecturerName}`
-                        }
-                        alt="advisor-image"
-                        className="border rounded-full h-8 w-8 md:h-12 md:w-12"
-                      />
-                    </Avatar>
-                    <div>
-                      <div className="text-xs md:text-sm font-medium text-env-darker">
-                        {advisor.lecturerName}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {advisor.lecturerNIP}
+              {seminar.advisors.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {seminar.advisors.map((advisor, index) => (
+                    <div
+                      key={index}
+                      className="flex border-env-light rounded-md items-center space-x-2"
+                    >
+                      <Avatar>
+                        <AvatarImage
+                          src={
+                            advisor.profilePicture
+                              ? advisor.profilePicture
+                              : `https://robohash.org/${advisor.lecturerName}`
+                          }
+                          alt="advisor-image"
+                          className="border rounded-full h-8 w-8 md:h-12 md:w-12"
+                        />
+                      </Avatar>
+                      <div>
+                        <div className="text-xs md:text-sm font-medium text-env-darker">
+                          {advisor.lecturerName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {advisor.lecturerNIP ||
+                            advisor.externalLecturer?.externalId ||
+                            "N/A"}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-env-darker text-sm md:text-base font-bold">
+                  Belum ditentukan
+                </p>
+              )}
             </div>
             <div className="col-span-1">
               <h3 className="text-xs mb-2 md:text-sm font-medium font-heading text-muted-foreground">

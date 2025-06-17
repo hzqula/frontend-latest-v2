@@ -207,4 +207,9 @@ export const updateResultSeminarDocument = async (
   return response.data.seminarDocument;
 };
 
+export const fetchSeminarsWithExternalAdvisors = async () => {
+  const response = await apiClient.get("/seminars/external-advisors");
+  return response.data;
+};
+
 export default apiClient;

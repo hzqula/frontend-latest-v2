@@ -9,6 +9,7 @@ import {
   fetchStudents,
   fetchProposalSeminarByStudentNIM,
   fetchResultSeminarByStudentNIM,
+  fetchSeminarsWithExternalAdvisors,
 } from "../configs/apiClient";
 
 type DataType =
@@ -18,7 +19,8 @@ type DataType =
   | "lecturerByNIP"
   | "seminars"
   | "seminarById"
-  | "seminarByStudentNIM";
+  | "seminarByStudentNIM"
+  | "seminarsWithExternalAdvisors";
 
 interface UseApiDataOptions {
   type: DataType;
@@ -59,6 +61,8 @@ export const useApiData = ({
         } else {
           return fetchProposalSeminarByStudentNIM(param);
         }
+      case "seminarsWithExternalAdvisors":
+        return fetchSeminarsWithExternalAdvisors();
       default:
         throw new Error("Tipe data tidak diketahui");
     }

@@ -35,11 +35,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Seminar } from "@/configs/types";
+import { ExternalAdvisorSeminar } from "@/configs/types";
 import { Badge } from "@/components/ui/badge";
 
 interface TableExternalSeminarsProps {
-  seminars: Seminar[];
+  seminars: ExternalAdvisorSeminar[];
   formatDate: (dateString: string | null) => string;
   formatTime: (dateString: string | null) => string;
   getStatusBadgeType: (status: string | null) => string;
@@ -91,8 +91,8 @@ const TableExternalSeminars = ({
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
         } else if (sortConfig.key === "student") {
-          aValue = a.student?.name?.toLowerCase() || "";
-          bValue = b.student?.name?.toLowerCase() || "";
+          aValue = a.student.name.toLowerCase();
+          bValue = b.student.name.toLowerCase();
         } else if (sortConfig.key === "time") {
           aValue = a.time ? new Date(a.time).getTime() : 0;
           bValue = b.time ? new Date(b.time).getTime() : 0;
@@ -167,67 +167,73 @@ const TableExternalSeminars = ({
           </TableHeader>
           <TableBody>
             {paginatedSeminars.length > 0 ? (
-              paginatedSeminars.map((seminar: Seminar, index: number) => {
-                const startIndex = (currentPage - 1) * perPage;
-                const externalAdvisors = seminar.advisors.filter(
-                  (advisor) => advisor.externalLecturer
-                );
-                return (
-                  <TableRow key={seminar.id}>
-                    <TableCell className="text-center font-medium">
-                      {startIndex + index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium max-w-96">
-                      <div className="whitespace-nowrap overflow-hidden text-ellipsis">
-                        {seminar.title.replace(/\n/g, " ")}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>{seminar.student?.name || "N/A"}</div>
-                      <div className="text-muted-foreground">
-                        {seminar.student?.nim || "N/A"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>{formatDate(seminar.time)}</div>
-                      <div className="text-muted-foreground">
-                        Jam {formatTime(seminar.time)} WIB
-                      </div>
-                    </TableCell>
-                    <TableCell>{seminar.room || "Belum ditentukan"}</TableCell>
-                    <TableCell>
-                      {externalAdvisors.map((advisor, idx) => (
-                        <div key={idx}>{advisor.externalLecturer?.name}</div>
-                      ))}
-                    </TableCell>
-                    <TableCell>
-                      {externalAdvisors.map((advisor, idx) => (
-                        <div key={idx}>{advisor.externalLecturer?.contact}</div>
-                      ))}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusBadgeType(seminar.status)}>
-                        {seminar.status || "Belum Dimulai"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center space-x-2">
-                      {seminar.assessmentLinks?.map((link, idx) => (
-                        <Button
-                          key={idx}
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            copyAssessmentLink(seminar.id, link.token)
-                          }
-                        >
-                          <Link2 size={12} className="mr-1" />
-                          Copy
-                        </Button>
-                      ))}
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+              paginatedSeminars.map(
+                (seminar: ExternalAdvisorSeminar, index: number) => {
+                  const startIndex = (currentPage - 1) * perPage;
+                  const externalAdvisors = seminar.advisors.filter(
+                    (advisor) => advisor.externalAdvisor
+                  );
+                  return (
+                    <TableRow key={seminar.id}>
+                      <TableCell className="text-center font-medium">
+                        {startIndex + index + 1}
+                      </TableCell>
+                      <TableCell className="font-medium max-w-96">
+                        <div className="whitespace-nowrap overflow-hidden text-ellipsis">
+                          {seminar.title.replace(/\n/g, " ")}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>{seminar.student.name}</div>
+                        <div className="text-muted-foreground">
+                          {seminar.student.nim}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>{formatDate(seminar.time)}</div>
+                        <div className="text-muted-foreground">
+                          Jam {formatTime(seminar.time)} WIB
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {seminar.room || "Belum ditentukan"}
+                      </TableCell>
+                      <TableCell>
+                        {externalAdvisors.map((advisor, idx) => (
+                          <div key={idx}>{advisor.externalAdvisor?.name}</div>
+                        ))}
+                      </TableCell>
+                      <TableCell>
+                        {externalAdvisors.map((advisor, idx) => (
+                          <div key={idx}>
+                            {advisor.externalAdvisor?.contact}
+                          </div>
+                        ))}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusBadgeType(seminar.status)}>
+                          {seminar.status || "Belum Dimulai"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center space-x-2">
+                        {seminar.assessmentLinks.map((link, idx) => (
+                          <Button
+                            key={idx}
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              copyAssessmentLink(seminar.id, link.token)
+                            }
+                          >
+                            <Link2 size={12} className="mr-1" />
+                            Copy
+                          </Button>
+                        ))}
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              )
             ) : (
               <TableRow>
                 <TableCell
@@ -244,9 +250,9 @@ const TableExternalSeminars = ({
 
       <div className="grid grid-cols-1 gap-4 md:hidden">
         {paginatedSeminars.length > 0 ? (
-          paginatedSeminars.map((seminar: Seminar) => {
+          paginatedSeminars.map((seminar: ExternalAdvisorSeminar) => {
             const externalAdvisors = seminar.advisors.filter(
-              (advisor) => advisor.externalLecturer
+              (advisor) => advisor.externalAdvisor
             );
             return (
               <Card
@@ -265,11 +271,9 @@ const TableExternalSeminars = ({
                     <div className="flex items-center gap-2">
                       <User size={12} className="text-primary-600" />
                       <div>
-                        <span className="text-xs">
-                          {seminar.student?.name || "N/A"}
-                        </span>
+                        <span className="text-xs">{seminar.student.name}</span>
                         <span className="text-muted-foreground text-xs ml-2">
-                          ({seminar.student?.nim || "N/A"})
+                          ({seminar.student.nim})
                         </span>
                       </div>
                     </div>
@@ -295,7 +299,7 @@ const TableExternalSeminars = ({
                       <div>
                         {externalAdvisors.map((advisor, idx) => (
                           <span key={idx} className="text-xs">
-                            {advisor.externalLecturer?.name}
+                            {advisor.externalAdvisor?.name}
                           </span>
                         ))}
                       </div>
@@ -308,7 +312,7 @@ const TableExternalSeminars = ({
                   </div>
                 </CardContent>
                 <CardFooter className="pt-0 flex flex-col gap-2">
-                  {seminar.assessmentLinks?.map((link, idx) => (
+                  {seminar.assessmentLinks.map((link, idx) => (
                     <Button
                       key={idx}
                       variant="outline"

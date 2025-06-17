@@ -6,6 +6,7 @@ export interface Seminar {
   type: "HASIL" | "PROPOSAL";
   advisors: {
     lecturer?: Lecturer;
+    externalAdvisor?: ExternalAdvisors;
   }[];
   folderId: string | null;
   documents: {
@@ -33,6 +34,59 @@ export interface Seminar {
   createdAt: string;
 }
 
+export interface ExternalAdvisorSeminar {
+  id: number;
+  title: string;
+  type: "HASIL" | "PROPOSAL";
+  status: "DRAFT" | "SUBMITTED" | "SCHEDULED" | "COMPLETED" | null;
+  createdAt: string;
+  updatedAt: string;
+  studentNIM: string;
+  student: {
+    name: string;
+    nim: string;
+    profilePicture: string | null;
+  };
+  folderId: string | null;
+  time: string | null;
+  room: string | null;
+  advisors: {
+    lecturer: {
+      name: string;
+      nip: string;
+    } | null;
+    externalAdvisor: ExternalAdvisors | null;
+  }[];
+  assessors: {
+    lecturer: {
+      name: string;
+      nip: string;
+    };
+  }[];
+  assessments: {
+    lecturerNIP?: string;
+    writingScore?: number | null;
+    presentationScore?: number | null;
+    masteryScore?: number | null;
+    characteristicScore?: number | null;
+    finalScore?: number | null;
+    feedback?: string | null;
+    createdAt?: string;
+    lecturer?: {
+      name: string;
+      nip: string;
+    };
+  }[];
+  assessmentLinks: AssessmentLink[];
+}
+
+export interface AssessmentLink {
+  token: string;
+  expiresAt: string;
+  used: boolean;
+  externalAdvisor: ExternalAdvisors;
+}
+
 export interface RegisterSeminar {
   id: number | null;
   title: string;
@@ -42,9 +96,10 @@ export interface RegisterSeminar {
   } | null;
   status: "DRAFT" | "SUBMITTED" | "SCHEDULED" | "COMPLETED" | null;
   advisors: {
-    lecturerNIP: string;
+    lecturerNIP?: string;
     lecturerName?: string;
     profilePicture?: string;
+    externalAdvisor?: ExternalAdvisors;
   }[];
   documents: Record<
     string,
@@ -72,6 +127,14 @@ export interface Lecturer {
   name: string;
   phoneNumber?: string;
   profilePicture?: string;
+}
+
+export interface ExternalAdvisors {
+  id?: number;
+  name: string;
+  externalId: string;
+  contact: string;
+  institution?: string;
 }
 
 export interface LecturerSeminarData {

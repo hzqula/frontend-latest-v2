@@ -29,7 +29,7 @@ import { Stepper } from "@/components/Stepper";
 import { Link } from "react-router";
 import studentImg from "@/assets/img/student-ill.png";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
-import { Lecturer, RegisterSeminar } from "@/configs/types";
+import { Lecturer, RegisterSeminar, ExternalAdvisors } from "@/configs/types";
 import ModalDetailResearch from "@/components/ModalDetailResearch";
 import ModalUploadDocuments from "@/components/ModalUploadDocuments";
 import SeminarStepDetail from "@/components/SeminarStepDetail";
@@ -74,7 +74,7 @@ const StudentSeminarProposal = () => {
 
   const [modalResearchDetailOpen, setModalResearchDetailOpen] = useState(false);
   const [modalDocumentUploadOpen, setModalDocumentUploadOpen] = useState(false);
-  const [shouldRefetch, setShouldRefetch] = useState(false); // State untuk melacak apakah perlu refetch
+  const [shouldRefetch, setShouldRefetch] = useState(false);
 
   if (!user || !user.profile?.nim) {
     return <div>Loading...</div>;
@@ -90,10 +90,15 @@ const StudentSeminarProposal = () => {
         student: seminarData.student,
         status: seminarData.status,
         advisors: seminarData.advisors.map(
-          (advisor: { lecturer?: Lecturer }) => ({
+          (advisor: {
+            lecturer?: Lecturer;
+            externalAdvisor?: ExternalAdvisors;
+          }) => ({
             lecturerNIP: advisor.lecturer?.nip,
-            lecturerName: advisor.lecturer?.name,
+            lecturerName:
+              advisor.lecturer?.name || advisor.externalAdvisor?.name,
             profilePicture: advisor.lecturer?.profilePicture,
+            externalAdvisor: advisor.externalAdvisor,
           })
         ),
         documents: {
@@ -158,7 +163,7 @@ const StudentSeminarProposal = () => {
         },
         time: seminarData.time,
         room: seminarData.room,
-        assessors: seminarData.advisors.map(
+        assessors: seminarData.assessors.map(
           (assessor: { lecturer?: Lecturer }) => ({
             lecturerNIP: assessor.lecturer?.nip,
             lecturerName: assessor.lecturer?.name,
@@ -176,11 +181,10 @@ const StudentSeminarProposal = () => {
     }
   }, [seminarQuery.data]);
 
-  // Efek untuk memicu refetch ketika modal ditutup
   useEffect(() => {
     if (!modalDocumentUploadOpen && shouldRefetch) {
-      seminarQuery.refetch(); // Refetch data seminar setelah modal ditutup
-      setShouldRefetch(false); // Reset status refetch
+      seminarQuery.refetch();
+      setShouldRefetch(false);
     }
   }, [modalDocumentUploadOpen, shouldRefetch, seminarQuery]);
 
@@ -251,9 +255,8 @@ const StudentSeminarProposal = () => {
       COMPLETED: 100,
     }[seminar.status!] || 0;
 
-  // Callback untuk menangani dokumen yang berhasil diunggah
   const handleDocumentUploaded = () => {
-    setShouldRefetch(true); // Tandai bahwa refetch diperlukan saat modal ditutup
+    setShouldRefetch(true);
   };
 
   return (
@@ -386,13 +389,6 @@ const StudentSeminarProposal = () => {
           className="col-span-1 sm:col-span-2 lg:col-span-4"
         />
 
-        {seminarQuery.isLoading && <div>Loading seminar data...</div>}
-        {seminarQuery.error && (
-          <div>
-            Error loading seminar: {(seminarQuery.error as Error).message}
-          </div>
-        )}
-
         {currentStep === "step1" && (
           <Card className="bg-white col-span-1 sm:col-span-2 lg:col-span-4 overflow-hidden">
             <div className="relative bg-gradient-to-r from-env-base to-env-darker">
@@ -428,7 +424,7 @@ const StudentSeminarProposal = () => {
                       {seminar.advisors.map((advisor, index) => (
                         <div
                           key={index}
-                          className="flex md:border-l-2 border-env-light rounded-md items-center md:px-4 pb-1 space-x-2"
+                          className="flex border-env-light rounded-md items-center space-x-2"
                         >
                           <Avatar>
                             <AvatarImage
@@ -446,7 +442,9 @@ const StudentSeminarProposal = () => {
                               {advisor.lecturerName}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              {advisor.lecturerNIP}
+                              {advisor.lecturerNIP ||
+                                advisor.externalAdvisor?.externalId ||
+                                "N/A"}
                             </div>
                           </div>
                         </div>
@@ -640,8 +638,12 @@ const StudentSeminarProposal = () => {
         onOpenChange={setModalResearchDetailOpen}
         initialData={{
           researchTitle: seminar.title,
-          advisor1: seminar.advisors[0]?.lecturerNIP,
-          advisor2: seminar.advisors[1]?.lecturerNIP || "",
+          advisor1: seminar.advisors[0]?.externalAdvisor
+            ? seminar.advisors[0].externalAdvisor
+            : seminar.advisors[0]?.lecturerNIP || "",
+          advisor2: seminar.advisors[1]?.externalAdvisor
+            ? seminar.advisors[1].externalAdvisor
+            : seminar.advisors[1]?.lecturerNIP || "",
         }}
         user={user}
         token={token}

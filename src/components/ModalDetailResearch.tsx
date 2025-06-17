@@ -49,7 +49,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import axios from "axios";
-import { Lecturer, RegisterSeminar, ExternalLecturer } from "@/configs/types";
+import { Lecturer, RegisterSeminar, ExternalAdvisors } from "@/configs/types";
 
 const formSchema = z.object({
   researchTitle: z
@@ -82,8 +82,8 @@ interface ModalDetailResearchProps {
   onOpenChange: (open: boolean) => void;
   initialData: {
     researchTitle: string;
-    advisor1: string | ExternalLecturer;
-    advisor2: string | ExternalLecturer | "";
+    advisor1: string | ExternalAdvisors;
+    advisor2: string | ExternalAdvisors | "";
   };
   user: any;
   token: string | null;
@@ -128,10 +128,10 @@ const ModalDetailResearch = ({
     defaultValues: {
       researchTitle: initialData.researchTitle || "",
       advisor1: isAdvisor1External
-        ? (initialData.advisor1 as ExternalLecturer)
+        ? (initialData.advisor1 as ExternalAdvisors)
         : (initialData.advisor1 as string) || "",
       advisor2: isAdvisor2External
-        ? (initialData.advisor2 as ExternalLecturer)
+        ? (initialData.advisor2 as ExternalAdvisors)
         : (initialData.advisor2 as string) || "",
     },
   });
@@ -142,7 +142,7 @@ const ModalDetailResearch = ({
     setIsSubmitting(true);
     try {
       const advisorNIPs: string[] = [];
-      const externalAdvisors: ExternalLecturer[] = [];
+      const externalAdvisors: ExternalAdvisors[] = [];
 
       if (typeof data.advisor1 === "string") {
         advisorNIPs.push(data.advisor1);
@@ -196,7 +196,7 @@ const ModalDetailResearch = ({
                   )?.profilePicture || "",
               }
             : {
-                externalLecturer: data.advisor1,
+                externalAdvisor: data.advisor1,
               },
           ...(data.advisor2
             ? [
@@ -213,7 +213,7 @@ const ModalDetailResearch = ({
                         )?.profilePicture || "",
                     }
                   : {
-                      externalLecturer: data.advisor2,
+                      externalAdvisor: data.advisor2,
                     },
               ]
             : []),
@@ -334,11 +334,11 @@ const ModalDetailResearch = ({
                           <Input
                             placeholder="Nama Dosen"
                             value={
-                              (field.value as ExternalLecturer)?.name || ""
+                              (field.value as ExternalAdvisors)?.name || ""
                             }
                             onChange={(e) =>
                               form.setValue("advisor1", {
-                                ...(field.value as ExternalLecturer),
+                                ...(field.value as ExternalAdvisors),
                                 name: e.target.value,
                               })
                             }
@@ -348,12 +348,12 @@ const ModalDetailResearch = ({
                           <Input
                             placeholder="ID Eksternal (misal NIDN)"
                             value={
-                              (field.value as ExternalLecturer)?.externalId ||
+                              (field.value as ExternalAdvisors)?.externalId ||
                               ""
                             }
                             onChange={(e) =>
                               form.setValue("advisor1", {
-                                ...(field.value as ExternalLecturer),
+                                ...(field.value as ExternalAdvisors),
                                 externalId: e.target.value,
                               })
                             }
@@ -363,11 +363,11 @@ const ModalDetailResearch = ({
                           <Input
                             placeholder="Kontak (email atau nomor telepon)"
                             value={
-                              (field.value as ExternalLecturer)?.contact || ""
+                              (field.value as ExternalAdvisors)?.contact || ""
                             }
                             onChange={(e) =>
                               form.setValue("advisor1", {
-                                ...(field.value as ExternalLecturer),
+                                ...(field.value as ExternalAdvisors),
                                 contact: e.target.value,
                               })
                             }
@@ -526,11 +526,11 @@ const ModalDetailResearch = ({
                             <Input
                               placeholder="Nama Dosen"
                               value={
-                                (field.value as ExternalLecturer)?.name || ""
+                                (field.value as ExternalAdvisors)?.name || ""
                               }
                               onChange={(e) =>
                                 form.setValue("advisor2", {
-                                  ...((field.value as ExternalLecturer) || {
+                                  ...((field.value as ExternalAdvisors) || {
                                     name: "",
                                     externalId: "",
                                     contact: "",
@@ -544,12 +544,12 @@ const ModalDetailResearch = ({
                             <Input
                               placeholder="ID Eksternal (misal NIDN)"
                               value={
-                                (field.value as ExternalLecturer)?.externalId ||
+                                (field.value as ExternalAdvisors)?.externalId ||
                                 ""
                               }
                               onChange={(e) =>
                                 form.setValue("advisor2", {
-                                  ...((field.value as ExternalLecturer) || {
+                                  ...((field.value as ExternalAdvisors) || {
                                     name: "",
                                     externalId: "",
                                     contact: "",
@@ -563,11 +563,11 @@ const ModalDetailResearch = ({
                             <Input
                               placeholder="Kontak (email atau nomor telepon)"
                               value={
-                                (field.value as ExternalLecturer)?.contact || ""
+                                (field.value as ExternalAdvisors)?.contact || ""
                               }
                               onChange={(e) =>
                                 form.setValue("advisor2", {
-                                  ...((field.value as ExternalLecturer) || {
+                                  ...((field.value as ExternalAdvisors) || {
                                     name: "",
                                     externalId: "",
                                     contact: "",

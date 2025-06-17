@@ -294,7 +294,7 @@ const SeminarStepDetail = ({
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {advisor.lecturerNIP ||
-                            advisor.externalLecturer?.externalId ||
+                            advisor.externalAdvisor?.externalId ||
                             "N/A"}
                         </div>
                       </div>
